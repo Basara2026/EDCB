@@ -8,12 +8,12 @@ Configuration files are stored in the 'ini' directory.
 ## このフォークについて
 xtne6fさんのフォーク（xtne6f/EDCB）の work-plus-s-261122 をベースに、
 EpgTimer に変更を加えたフォークです。
-変更は EpgTimer のみで、EpgTimerSrv など他は上流のままです。
-機能の説明やビルド方法はフォーク元を参照してください。
 
 ## 主な変更点
 - 番組表のデザイン変更を中心に、多数の変更を行っています
-- 詳細は上流との差分を参照してください
+- 変更は EpgTimer と、ビルド用ソリューションファイル
+  （Document/EDCB_ALL.VS2026.core.sln の追加）のみです
+- ビルドにはこのソリューションファイルを使用してください
 
 ----
 以下はフォーク元（xtne6f氏）の説明です。
