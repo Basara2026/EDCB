@@ -43,64 +43,112 @@ namespace EpgTimer.EpgView
             canvas.Height = 0;
         }
 
-        public void SetTime(IEnumerable<DateTime> sortedTimeList, double heightPerHour, bool needTimeOnly, List<Brush> brushList, bool weekMode)
+        /// <summary>
+        /// trueのとき、マーカーを右端側に表示する(番組表の右端に置く場合用)
+        /// </summary>
+        public bool MarkerOnRight { get; set; }
+
+        private double blurRadius = 0;
+        private Brush textBrush = null;
+        private Color? blurColor = null;
+
+        internal static void SetBlur(UIElement element, double radius)
+        {
+            SetBlur(element, radius, Colors.Black);
+        }
+
+        internal static void SetBlur(UIElement element, double radius, Color color)
+        {
+            if (radius > 0)
+            {
+                var effect = new System.Windows.Media.Effects.DropShadowEffect()
+                {
+                    Color = color,
+                    ShadowDepth = 0,
+                    BlurRadius = radius,
+                    Opacity = 1
+                };
+                effect.Freeze();
+                element.Effect = effect;
+            }
+            else
+            {
+                element.ClearValue(UIElement.EffectProperty);
+            }
+        }
+
+        private void ApplyTextStyle(Border host)
+        {
+            var text = (TextBlock)host.Child;
+            if (textBrush != null)
+            {
+                text.Foreground = textBrush;
+            }
+            else
+            {
+                text.ClearValue(TextBlock.ForegroundProperty);
+            }
+            //ぼかしの色は文字色に合わせる(既定の文字色は白)
+            Brush effectiveBrush = textBrush ?? Brushes.White;
+            EpgHeaderFormat.SetTextBlur(host, blurRadius, effectiveBrush, blurColor);
+            EpgHeaderFormat.SetTextBlur(text, blurRadius, effectiveBrush, blurColor);
+        }
+
+        /// <summary>
+        /// 日付と時間の文字色(既定の色にするときはnull)と、文字の背景に入れるぼかしの半径(px、0でなし)を指定する
+        /// </summary>
+        public void SetTextStyle(Brush brush, double radius, Color? glowColor = null)
+        {
+            textBrush = brush;
+            blurColor = glowColor;
+            blurRadius = radius <= 20 ? radius : 20;
+            foreach (Border host in stackPanel_time.Children.OfType<Grid>().SelectMany(g => g.Children.OfType<Border>()))
+            {
+                ApplyTextStyle(host);
+            }
+        }
+
+        public void SetTime(IEnumerable<DateTime> sortedTimeList, double heightPerHour, bool needTimeOnly, List<Brush> brushList, bool weekMode, int fontWeight = 400)
         {
             ClearInfo();
+            //時間の数字は、太さの設定が既定(400)のときは太字、指定があるときはその太さにする
+            FontWeight hourWeight = fontWeight == 400 ? FontWeights.Bold : FontWeight.FromOpenTypeWeight(Math.Max(1, Math.Min(999, fontWeight)));
             if (heightPerHour > 1)
             {
                 foreach (DateTime time in sortedTimeList)
                 {
                     canvasTimeList.Add(time);
 
-                    // 高さ合わせのため上下に同じものを置く
-                    var items = new TextBlock[2];
-                    for (int i = 0; i < 2; i++)
+                    // 日付と時間は右に90度回転させ、上から下へ読む1行で表示する(例: 10/17(土) 15)
+                    var text = new TextBlock()
                     {
-                        if (weekMode == false && (time.Hour % 3 == 0 || needTimeOnly))
+                        Style = (Style)FindResource("AppEpgTimeHeaderDateTextBlockStyle"),
+                        HorizontalAlignment = HorizontalAlignment.Center,
+                        LayoutTransform = new RotateTransform(90)
+                    };
+                    if (weekMode == false && (time.Hour % 3 == 0 || needTimeOnly))
+                    {
+                        text.Inlines.Add(new Run(time.ToString("M\\/d")));
+                        if (heightPerHour >= 60)
                         {
-                            items[i] = new TextBlock() { Style = (Style)FindResource("AppEpgTimeHeaderDateTextBlockStyle") };
-                            items[i].Inlines.Add(new Run(time.ToString("M\\/d")));
-                            if (heightPerHour >= 60)
-                            {
-                                var weekday = new Run(time.ToString("ddd"))
-                                {
-                                    Style = (Style)FindResource(
-                                        time.DayOfWeek == DayOfWeek.Saturday ? "AppEpgTimeHeaderSaturdayRunStyle" :
-                                        time.DayOfWeek == DayOfWeek.Sunday ? "AppEpgTimeHeaderSundayRunStyle" : "AppEpgTimeHeaderDayRunStyle")
-                                };
-                                items[i].Inlines.Add(new LineBreak());
-                                items[i].Inlines.Add(new Run("("));
-                                items[i].Inlines.Add(weekday);
-                                items[i].Inlines.Add(new Run(")"));
-                            }
+                            //曜日は土日の色分けや太字にせず、他の文字と同じ白にする
+                            text.Inlines.Add(new Run(time.ToString("(ddd)")));
                         }
+                        text.Inlines.Add(new Run(" "));
                     }
+                    //時間は日付と同じ大きさ
+                    text.Inlines.Add(new Run(time.Hour.ToString()) { FontWeight = hourWeight });
 
                     var grid = new Grid()
                     {
-                        Background = brushList[time.Hour / 6],
+                        Background = brushList[time.Hour],
                         Height = heightPerHour - 1,
                         Margin = new Thickness(1, 1, 1, 0)
                     };
-                    grid.RowDefinitions.Add(new RowDefinition() { Height = GridLength.Auto });
-                    grid.RowDefinitions.Add(new RowDefinition());
-                    grid.RowDefinitions.Add(new RowDefinition() { Height = GridLength.Auto });
-                    grid.RowDefinitions.Add(new RowDefinition());
-                    grid.RowDefinitions.Add(new RowDefinition() { Height = GridLength.Auto });
-                    if (items[0] != null)
-                    {
-                        grid.Children.Add(items[0]);
-                        items[1].Visibility = Visibility.Hidden;
-                        Grid.SetRow(items[1], 4);
-                        grid.Children.Add(items[1]);
-                    }
-                    var hour = new TextBlock()
-                    {
-                        Style = (Style)FindResource("AppEpgTimeHeaderHourTextBlockStyle"),
-                        Text = time.Hour.ToString()
-                    };
-                    Grid.SetRow(hour, 2);
-                    grid.Children.Add(hour);
+                    //文字を黒でぼかす。文字と、文字を包む枠の両方に影を付けると、背景が暗くなりすぎず輪郭がはっきりする
+                    var host = new Border() { Child = text, HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Top };
+                    ApplyTextStyle(host);
+                    grid.Children.Add(host);
                     stackPanel_time.Children.Add(grid);
                 }
                 canvasHeightPerHour = heightPerHour;
@@ -136,8 +184,17 @@ namespace EpgTimer.EpgView
                 for (int i = 0; i < yRanges.Count(); i++)
                 {
                     var item = new Line();
-                    item.X1 = 5;
-                    item.X2 = 5;
+                    if (MarkerOnRight)
+                    {
+                        item.X1 = 0;
+                        item.X2 = 0;
+                        Canvas.SetRight(item, 5);
+                    }
+                    else
+                    {
+                        item.X1 = 5;
+                        item.X2 = 5;
+                    }
                     item.Y1 = yRanges[i].Item1;
                     // 重なっていればつなげる
                     double y2 = yRanges[i].Item2;

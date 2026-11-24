@@ -5,7 +5,9 @@ namespace EpgTimer
     public partial class App : System.Windows.Application
     {
         internal const string VERSION_TEXT = (VERSION_TAG != "" ? " " + VERSION_TAG : "") + (VERSION_EXTRA != "" ? " " + VERSION_EXTRA : "");
-        const string VERSION_TAG = "work+s-261122";
+        // Update date and time (yyyyMMddHHmm). Rewrite this on every update.
+        internal const string VERSION_NUMBER = "202611241655";
+        const string VERSION_TAG = "modified-" + VERSION_NUMBER;
         const string VERSION_EXTRA = "";
     }
 }

@@ -476,12 +476,7 @@ namespace EpgTimer
                     }
                 }
 
-                var timeBrushList = new List<Brush>();
-                for (int i = 0; i < epgSetting.TimeColorList.Count; i++)
-                {
-                    SolidColorBrush brush = ColorDef.CustColorBrush(epgSetting.TimeColorList[i], epgSetting.TimeCustColorList[i]);
-                    timeBrushList.Add(epgSetting.EpgGradationHeader ? (Brush)ColorDef.GradientBrush(brush.Color) : brush);
-                }
+                var timeBrushList = EpgTimer.EpgView.EpgHeaderFormat.CreateTimeBrushes(epgSetting);
                 tunerReserveTimeView.SetTime(timeList, 60 * epgSetting.MinHeight, timeBrushList);
 
                 SolidColorBrush serviceBrush = ColorDef.CustColorBrush(epgSetting.ServiceColor, epgSetting.ServiceCustColor);

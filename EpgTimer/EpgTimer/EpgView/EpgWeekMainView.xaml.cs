@@ -37,7 +37,7 @@ namespace EpgTimer
 
         private bool updateEpgData = true;
         private bool updateReserveData = true;
-        private readonly Tuple<double, double, double> initialGridPGDefinitionValues;
+        private Tuple<double, double, double> initialGridPGDefinitionValues;
 
         public EpgWeekMainView(CustomEpgTabInfo setInfo, DateTime _baseTime)
         {
@@ -69,6 +69,7 @@ namespace EpgTimer
         {
             epgProgramView.ClearInfo();
             timeView.ClearInfo();
+            timeViewRight.ClearInfo();
             weekDayView.ClearInfo();
             timeList.Clear();
             dayList.Clear();
@@ -142,6 +143,7 @@ namespace EpgTimer
         {
             //時間軸の表示もスクロール
             timeView.scrollViewer.ScrollToVerticalOffset(epgProgramView.scrollViewer.VerticalOffset);
+            timeViewRight.scrollViewer.ScrollToVerticalOffset(epgProgramView.scrollViewer.VerticalOffset);
             //日付の表示もスクロール
             weekDayView.scrollViewer.ScrollToHorizontalOffset(epgProgramView.scrollViewer.HorizontalOffset);
         }
@@ -562,6 +564,20 @@ namespace EpgTimer
         }
 
         /// <summary>
+        /// 右クリックメニュー 番組内容をコピーイベント呼び出し
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void cm_copy_Click(object sender, RoutedEventArgs e)
+        {
+            ProgramViewItem programView = ((Tuple<ReserveData, ProgramViewItem>)((MenuItem)sender).DataContext).Item2;
+            if (programView != null)
+            {
+                CommonManager.CopyProgramText(programView.EventInfo);
+            }
+        }
+
+        /// <summary>
         /// 右クリックメニュー 追っかけ再生イベント呼び出し
         /// </summary>
         /// <param name="sender"></param>
@@ -639,6 +655,7 @@ namespace EpgTimer
             cm_chg.Visibility = reserve != null ? Visibility.Visible : Visibility.Collapsed;
             cm_del.IsEnabled = reserve != null;
             cm_autoadd.IsEnabled = program != null;
+            cm_copy.IsEnabled = program != null;
             cm_timeshift.IsEnabled = reserve != null;
             if (reserve != null)
             {
@@ -706,6 +723,62 @@ namespace EpgTimer
             win.Show();
         }
 
+        /// <summary>
+        /// 「現在」ボタンとサービス名(日付)の行のフォントと高さを設定に合わせる
+        /// </summary>
+        private void ApplyHeaderFormat()
+        {
+            try
+            {
+                EpgHeaderFormat.Apply(setViewInfo.EpgSetting, true, grid_PG.RowDefinitions[0], grid_PG.RowDefinitions[1], new Control[] { button_now, button_nowRight }, weekDayView);
+                EpgHeaderFormat.CenterTextBlocks(weekDayView);
+                //「ボタンレイアウト変更」のレイアウトでは、この画面の上の行(←→、サービス選択)は、ウィンドウ上部のメニューの行に移すので隠す
+                bool pulldownMode = Settings.Instance.ViewButtonShowAsTab;
+                uniformGrid_nav.Visibility = pulldownMode ? Visibility.Collapsed : Visibility.Visible;
+                stackPanel_service.Visibility = pulldownMode ? Visibility.Collapsed : Visibility.Visible;
+                if (pulldownMode)
+                {
+                    grid_PG.RowDefinitions[0].Height = new GridLength(0);
+                }
+                UpdateServiceComboWidth();
+                //文字の上下のずれをフォントに合わせて補正する
+                foreach (Control control in new Control[] { button_prev, button_next, comboBox_service })
+                {
+                    EpgHeaderFormat.SetControlTextCenter(control);
+                }
+                EpgHeaderFormat.ApplyTimeHeaderFont(setViewInfo.EpgSetting, timeView);
+                EpgHeaderFormat.ApplyTimeHeaderFont(setViewInfo.EpgSetting, timeViewRight);
+                Brush timeBrush = EpgHeaderFormat.GetTextBrush(setViewInfo.EpgSetting.TimeTextColor, setViewInfo.EpgSetting.TimeTextCustColor);
+                Color? timeBlurColor = EpgHeaderFormat.GetBlurColor(setViewInfo.EpgSetting.TimeBlurColorEnabled, setViewInfo.EpgSetting.TimeBlurColor, setViewInfo.EpgSetting.TimeBlurCustColor);
+                timeView.SetTextStyle(timeBrush, setViewInfo.EpgSetting.TimeBlurRadius, timeBlurColor);
+                timeViewRight.SetTextStyle(timeBrush, setViewInfo.EpgSetting.TimeBlurRadius, timeBlurColor);
+                //日付と時間(と「現在」ボタン)を左端・右端のどちらに表示するか。左端を表示しないときは「←→」ボタンを右端に移す
+                double leftWidth = EpgHeaderFormat.ApplyTimeHeaderPlace(setViewInfo.EpgSetting, grid_PG, timeView, timeViewRight, button_now, button_nowRight, uniformGrid_nav);
+                //高DPI環境での位置合わせの基準になる行の高さも更新する
+                initialGridPGDefinitionValues = new Tuple<double, double, double>(
+                    leftWidth,
+                    grid_PG.RowDefinitions[0].Height.Value,
+                    grid_PG.RowDefinitions[1].Height.Value);
+            }
+            catch (Exception ex)
+            {
+                //ここはDispatcherの処理が止まっている最中に呼ばれることがありMessageBoxを出せないので出力のみ
+                System.Diagnostics.Debug.WriteLine(ex);
+            }
+            //位置合わせはレイアウトの処理中に行えないことがあるため、OnDpiChangedと同様に後で行う
+            Dispatcher.BeginInvoke(DispatcherPriority.Render, new Action(() =>
+            {
+                try
+                {
+                    AlignProgramViewPositionToDevicePixels();
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine(ex);
+                }
+            }));
+        }
+
         private void AlignProgramViewPositionToDevicePixels()
         {
             var ps = PresentationSource.FromVisual(this);
@@ -717,7 +790,7 @@ namespace EpgTimer
                     initialGridPGDefinitionValues.Item1,
                     initialGridPGDefinitionValues.Item2 + initialGridPGDefinitionValues.Item3));
                 Matrix m = ps.CompositionTarget.TransformToDevice;
-                grid_PG.ColumnDefinitions[0].Width = new GridLength(initialGridPGDefinitionValues.Item1 + Math.Floor(p.X * m.M11) / m.M11 - p.X);
+                grid_PG.ColumnDefinitions[0].Width = new GridLength(Math.Max(initialGridPGDefinitionValues.Item1 + Math.Floor(p.X * m.M11) / m.M11 - p.X, 0));
                 grid_PG.RowDefinitions[1].Height = new GridLength(initialGridPGDefinitionValues.Item3 + Math.Floor(p.Y * m.M22) / m.M22 - p.Y);
             }
         }
@@ -983,7 +1056,8 @@ namespace EpgTimer
                         if (serviceEventList.ContainsKey(id))
                         {
                             var item = new ComboBoxItem();
-                            item.Content = serviceEventList[id].serviceInfo.service_name;
+                            EpgServiceInfo svInfo = serviceEventList[id].serviceInfo;
+                            item.Content = Settings.Instance.GetServiceDisplayName(svInfo.ONID, svInfo.TSID, svInfo.SID, svInfo.service_name);
                             item.DataContext = serviceEventList[id].serviceInfo;
                             comboBox_service.Items.Add(item);
                             if (selectID == id || selectID == 0)
@@ -1215,14 +1289,15 @@ namespace EpgTimer
                     dayList.Count * setViewInfo.EpgSetting.ServiceWidth,
                     timeList.Count * 60 * setViewInfo.EpgSetting.MinHeight);
 
-                var timeBrushList = new List<Brush>();
-                for (int i = 0; i < setViewInfo.EpgSetting.TimeColorList.Count; i++)
-                {
-                    SolidColorBrush brush = ColorDef.CustColorBrush(setViewInfo.EpgSetting.TimeColorList[i], setViewInfo.EpgSetting.TimeCustColorList[i]);
-                    timeBrushList.Add(setViewInfo.EpgSetting.EpgGradationHeader ? (Brush)ColorDef.GradientBrush(brush.Color) : brush);
-                }
-                timeView.SetTime(timeList.Keys, 60 * setViewInfo.EpgSetting.MinHeight, setViewInfo.NeedTimeOnlyWeek, timeBrushList, true);
-                weekDayView.SetDay(dayList, setViewInfo.EpgSetting.ServiceWidth, setViewInfo.EpgSetting.EpgGradationHeader, Settings.Instance.ToggleEpgModeOnHeaderLeftClick);
+                var timeBrushList = EpgHeaderFormat.CreateTimeBrushes(setViewInfo.EpgSetting);
+                timeView.SetTime(timeList.Keys, 60 * setViewInfo.EpgSetting.MinHeight, setViewInfo.NeedTimeOnlyWeek, timeBrushList, true, setViewInfo.EpgSetting.FontWeightTimeHeader);
+                timeViewRight.SetTime(timeList.Keys, 60 * setViewInfo.EpgSetting.MinHeight, setViewInfo.NeedTimeOnlyWeek, timeBrushList, true, setViewInfo.EpgSetting.FontWeightTimeHeader);
+                weekDayView.SetDay(dayList, setViewInfo.EpgSetting.ServiceWidth, setViewInfo.EpgSetting.EpgGradationHeader, Settings.Instance.ToggleEpgModeOnHeaderLeftClick,
+                    EpgHeaderFormat.GetTextBrush(setViewInfo.EpgSetting.WeekDayTextColor, setViewInfo.EpgSetting.WeekDayTextCustColor),
+                    setViewInfo.EpgSetting.WeekDayBlurRadius,
+                    EpgHeaderFormat.GetBlurColor(setViewInfo.EpgSetting.WeekDayBlurColorEnabled, setViewInfo.EpgSetting.WeekDayBlurColor, setViewInfo.EpgSetting.WeekDayBlurCustColor),
+                    setViewInfo.EpgSetting.FontWeightHeaderWeek);
+                ApplyHeaderFormat();
             }
 
             ReDrawNowLine();
@@ -1230,8 +1305,61 @@ namespace EpgTimer
 
         private void comboBox_service_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            UpdateServiceComboWidth();
             UpdateProgramView();
             ReloadReserveViewItem();
+        }
+
+        /// <summary>
+        /// 「ボタンレイアウト変更」のとき、ウィンドウ上部のメニューの行(番組表の切り替えの右隣)に置くサービス選択のプルダウン。
+        /// この画面の中のサービス選択の行からは取り外す。「ボタンレイアウト変更」でないときはnull
+        /// </summary>
+        public ComboBox ServicePullDown
+        {
+            get
+            {
+                if (Settings.Instance.ViewButtonShowAsTab == false)
+                {
+                    return null;
+                }
+                if (ReferenceEquals(comboBox_service.Parent, stackPanel_service))
+                {
+                    stackPanel_service.Children.Remove(comboBox_service);
+                    comboBox_service.Margin = new Thickness(0);
+                }
+                UpdateServiceComboWidth();
+                return comboBox_service;
+            }
+        }
+
+        /// <summary>
+        /// 「ボタンレイアウト変更」のとき、サービス選択のプルダウンの幅を、選んでいるサービス名の文字列に合わせる
+        /// </summary>
+        private void UpdateServiceComboWidth()
+        {
+            if (Settings.Instance.ViewButtonShowAsTab == false)
+            {
+                return;
+            }
+            var item = comboBox_service.SelectedItem as ComboBoxItem;
+            string text = item != null ? item.Content as string : null;
+            if (string.IsNullOrEmpty(text))
+            {
+                return;
+            }
+            try
+            {
+#pragma warning disable 618
+                var formatted = new FormattedText(text, System.Globalization.CultureInfo.CurrentUICulture, FlowDirection.LeftToRight,
+                    new Typeface(comboBox_service.FontFamily, comboBox_service.FontStyle, comboBox_service.FontWeight, comboBox_service.FontStretch),
+                    comboBox_service.FontSize, Brushes.Black);
+#pragma warning restore 618
+                //文字列の幅に、余白と右端の矢印の分を足す
+                comboBox_service.Width = Math.Ceiling(formatted.WidthIncludingTrailingWhitespace) + comboBox_service.Padding.Left + comboBox_service.Padding.Right + 40;
+            }
+            catch
+            {
+            }
         }
 
 #if PER_MONITOR_DPI
@@ -1347,16 +1475,6 @@ namespace EpgTimer
                         }
                     }
                 }
-            }
-        }
-
-        private void button1_Click(object sender, RoutedEventArgs e)
-        {
-            CustomEpgTabInfo setInfo = setViewInfo.DeepClone();
-            setInfo.ViewMode = 0;
-            if (ViewModeChangeRequested != null)
-            {
-                ViewModeChangeRequested(this, setInfo, baseTime, null);
             }
         }
     }

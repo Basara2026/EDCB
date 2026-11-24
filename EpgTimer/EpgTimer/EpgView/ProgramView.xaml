@@ -9,12 +9,12 @@
     <ScrollViewer HorizontalScrollBarVisibility="Visible" IsTabStop="True" Name="scrollViewer" MouseEnter="scrollViewer_MouseEnter" MouseLeave="scrollViewer_MouseLeave" ScrollChanged="scrollViewer_ScrollChanged">
         <Canvas Name="canvasContainer" HorizontalAlignment="Left" VerticalAlignment="Top">
             <Canvas Name="canvas" HorizontalAlignment="Left" VerticalAlignment="Top" MouseMove="canvas_MouseMove" MouseLeftButtonDown="canvas_MouseLeftButtonDown" MouseLeftButtonUp="canvas_MouseLeftButtonUp" MouseRightButtonUp="canvas_MouseRightButtonUp" MouseLeave="canvas_MouseLeave">
-                <StackPanel IsHitTestVisible="False" Name="popupItem" UseLayoutRounding="True" Visibility="Hidden" ZIndex="20">
-                    <StackPanel.Effect>
+                <Grid IsHitTestVisible="False" Name="popupItem" UseLayoutRounding="True" Visibility="Hidden" ZIndex="20">
+                    <Grid.Effect>
                         <DropShadowEffect BlurRadius="12" Opacity="0.5" />
-                    </StackPanel.Effect>
+                    </Grid.Effect>
                     <local:EpgViewPanel x:Name="popupItemPanel" />
-                </StackPanel>
+                </Grid>
                 <Line Canvas.ZIndex="15" IsHitTestVisible="False" Name="nowLine" Style="{StaticResource AppNowLineStyle}" Visibility="Hidden">
                     <Line.Effect>
                         <DropShadowEffect BlurRadius="10" />

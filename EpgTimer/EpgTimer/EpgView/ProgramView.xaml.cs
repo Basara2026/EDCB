@@ -192,27 +192,53 @@ namespace EpgTimer.EpgView
                 return;
             }
 
+            //前回のポップアップに重ねた、本物のぼかし用の層を外す
+            foreach (EpgViewPanel layerPanel in popupLayerPanels)
+            {
+                popupItem.Children.Remove(layerPanel);
+            }
+            popupLayerPanels.Clear();
+
             //この番組だけのEpgViewPanelをつくる
             popupItemPanel.Background = new SolidColorBrush(Color.FromRgb(EpgSetting.EpgBackColorR, EpgSetting.EpgBackColorG, EpgSetting.EpgBackColorB));
             popupItemPanel.Background.Freeze();
-            popupItemPanel.Width = info.Width;
+            //ポップアップの幅。0(既定)のときは番組の幅に合わせる
+            double popupWidth = info.Width;
+            double popupLeft = info.LeftPos;
+            if (EpgSetting.EpgPopupWidth > 0)
+            {
+                double viewportWidth = Math.Max(Math.Floor(scrollViewer.ViewportWidth), 1);
+                popupWidth = Math.Min(EpgSetting.EpgPopupWidth, viewportWidth);
+                //左右にはみ出すなら表示範囲内にずらす
+                popupLeft = Math.Min(popupLeft, scrollViewer.HorizontalOffset + viewportWidth - popupWidth);
+                popupLeft = Math.Max(popupLeft, scrollViewer.HorizontalOffset);
+            }
+            popupItemPanel.Width = popupWidth;
             var dictTitle = CommonManager.CreateReplaceDictionary(EpgSetting.EpgReplacePatternTitle);
             var dicNormal = CommonManager.CreateReplaceDictionary(EpgSetting.EpgReplacePattern);
-            var itemFontTitle = new EpgViewPanel.ItemFont(EpgSetting.FontNameTitle, EpgSetting.FontBoldTitle, true);
-            var itemFontNormal = new EpgViewPanel.ItemFont(EpgSetting.FontName, false, true);
+            var itemFontTitle = new EpgViewPanel.ItemFont(EpgSetting.FontNameTitle, EpgSetting.FontWeightTitle, true);
+            var itemFontNormal = new EpgViewPanel.ItemFont(EpgSetting.FontName, EpgSetting.FontWeightNormal, true);
             Brush brushTitle = ColorDef.CustColorBrush(EpgSetting.TitleColor1, EpgSetting.TitleCustColor1);
             Brush brushNormal = ColorDef.CustColorBrush(EpgSetting.TitleColor2, EpgSetting.TitleCustColor2);
             Canvas.SetLeft(popupItemPanel, 0);
             var items = new List<ProgramViewItem>() { new ProgramViewItem(info.EventInfo, info.Past, info.Filtered) };
-            items[0].Width = info.Width;
+            items[0].Width = popupWidth;
 
             //テキスト全体を表示できる高さを求める
             items[0].Height = 4096;
+            popupItemPanel.TitleBlurRadius = EpgSetting.TitleBlurRadius;
+            popupItemPanel.BodyBlurRadius = EpgSetting.BodyBlurRadius;
+            popupItemPanel.TitleGlowColor = EpgHeaderFormat.GetBlurColor(EpgSetting.TitleBlurColorEnabled, EpgSetting.TitleBlurColor, EpgSetting.TitleBlurCustColor);
+            popupItemPanel.BodyGlowColor = EpgHeaderFormat.GetBlurColor(EpgSetting.BodyBlurColorEnabled, EpgSetting.BodyBlurColor, EpgSetting.BodyBlurCustColor);
+            popupItemPanel.BandMode = true;
+            popupItemPanel.DarkMode = EpgSetting.EpgDarkMode;
+            popupItemPanel.BandGradation = EpgSetting.EpgGradation;
+            popupItemPanel.BandBlurRadius = 10;
             popupItemPanel.Initialize(items, EpgSetting.EpgBorderLeftSize, EpgSetting.EpgBorderTopSize,
-                                      false, EpgSetting.EpgTitleIndent, EpgSetting.EpgExtInfoPopup,
+                                      false, true, EpgSetting.EpgExtInfoPopup,
                                       dictTitle, dicNormal, itemFontTitle, itemFontNormal,
                                       EpgSetting.FontSizeTitle, EpgSetting.FontSize, brushTitle, brushNormal,
-                                      EpgSetting.EpgBackColorA, contentBrushList);
+                                      EpgSetting.EpgBackColorA, contentBrushList, EpgSetting.EpgSymbolImage ? EpgSymbolImages.Get() : null);
             double itemHeight = Math.Max(popupItemPanel.LastItemRenderTextHeight, info.Height);
             double topPos = info.TopPos;
 
@@ -236,14 +262,28 @@ namespace EpgTimer.EpgView
 
             items[0].Height = itemHeight;
             popupItemPanel.Height = itemHeight;
+            popupItemPanel.TitleBlurRadius = EpgSetting.TitleBlurRadius;
+            popupItemPanel.BodyBlurRadius = EpgSetting.BodyBlurRadius;
+            popupItemPanel.TitleGlowColor = EpgHeaderFormat.GetBlurColor(EpgSetting.TitleBlurColorEnabled, EpgSetting.TitleBlurColor, EpgSetting.TitleBlurCustColor);
+            popupItemPanel.BodyGlowColor = EpgHeaderFormat.GetBlurColor(EpgSetting.BodyBlurColorEnabled, EpgSetting.BodyBlurColor, EpgSetting.BodyBlurCustColor);
+            popupItemPanel.BandMode = true;
+            popupItemPanel.DarkMode = EpgSetting.EpgDarkMode;
+            popupItemPanel.BandGradation = EpgSetting.EpgGradation;
+            popupItemPanel.BandBlurRadius = 10;
             popupItemPanel.Initialize(items, EpgSetting.EpgBorderLeftSize, EpgSetting.EpgBorderTopSize,
-                                      topPos != info.TopPos, EpgSetting.EpgTitleIndent, EpgSetting.EpgExtInfoPopup,
+                                      topPos != info.TopPos, true, EpgSetting.EpgExtInfoPopup,
                                       dictTitle, dicNormal, itemFontTitle, itemFontNormal,
                                       EpgSetting.FontSizeTitle, EpgSetting.FontSize, brushTitle, brushNormal,
-                                      EpgSetting.EpgBackColorA, contentBrushList);
+                                      EpgSetting.EpgBackColorA, contentBrushList, EpgSetting.EpgSymbolImage ? EpgSymbolImages.Get() : null);
+            //ポップアップも層に分けて重ねる
+            popupLayerPanels.AddRange(CreateRealBlurPanels(popupItemPanel));
+            foreach (EpgViewPanel layerPanel in popupLayerPanels)
+            {
+                popupItem.Children.Add(layerPanel);
+            }
             popupItemPanel.InvalidateVisual();
 
-            Canvas.SetLeft(popupItem, info.LeftPos);
+            Canvas.SetLeft(popupItem, popupLeft);
             Canvas.SetTop(popupItem, topPos);
             popupItem.Visibility = System.Windows.Visibility.Visible;
         }
@@ -362,8 +402,19 @@ namespace EpgTimer.EpgView
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.ToString());
+                ShowError(ex);
             }
+        }
+
+        /// <summary>
+        /// 例外を表示する。描画などでディスパッチャーの処理が中断されている間はメッセージボックスを出せず、
+        /// 元の例外が見えなくなるので、処理が落ち着いてから出す
+        /// </summary>
+        private static void ShowError(Exception ex)
+        {
+            string text = ex.ToString();
+            Application.Current.Dispatcher.BeginInvoke(new Action(() => MessageBox.Show(text)),
+                System.Windows.Threading.DispatcherPriority.ApplicationIdle);
         }
 
         public void SetProgramList(List<ProgramViewItem> programList, double width, double height)
@@ -384,8 +435,8 @@ namespace EpgTimer.EpgView
                         canvas.Children.RemoveAt(i--);
                     }
                 }
-                var itemFontNormal = new EpgViewPanel.ItemFont(EpgSetting.FontName, false, false);
-                var itemFontTitle = new EpgViewPanel.ItemFont(EpgSetting.FontNameTitle, EpgSetting.FontBoldTitle, false);
+                var itemFontNormal = new EpgViewPanel.ItemFont(EpgSetting.FontName, EpgSetting.FontWeightNormal, false);
+                var itemFontTitle = new EpgViewPanel.ItemFont(EpgSetting.FontNameTitle, EpgSetting.FontWeightTitle, false);
                 var background = new SolidColorBrush(Color.FromRgb(EpgSetting.EpgBackColorR, EpgSetting.EpgBackColorG, EpgSetting.EpgBackColorB));
                 //フリーズしないとかなり重い
                 background.Freeze();
@@ -398,7 +449,8 @@ namespace EpgTimer.EpgView
                 for (int i = 0; i < EpgSetting.ContentColorList.Count; i++)
                 {
                     SolidColorBrush brush = ColorDef.CustColorBrush(EpgSetting.ContentColorList[i], EpgSetting.ContentCustColorList[i]);
-                    contentBrushList.Add(EpgSetting.EpgGradation ? (Brush)ColorDef.GradientBrush(brush.Color) : brush);
+                    //グラデーションは帯と背景の描画側で付けるので、ここでは単色のブラシを渡す
+                    contentBrushList.Add(brush);
                 }
                 double totalWidth = 0;
                 foreach (var programList in programGroupList)
@@ -408,13 +460,27 @@ namespace EpgTimer.EpgView
                     item.Height = Math.Ceiling(height);
                     item.Width = programList.Item1;
                     Canvas.SetLeft(item, totalWidth);
+                    item.TitleBlurRadius = EpgSetting.TitleBlurRadius;
+                    item.BodyBlurRadius = EpgSetting.BodyBlurRadius;
+                    item.TitleGlowColor = EpgHeaderFormat.GetBlurColor(EpgSetting.TitleBlurColorEnabled, EpgSetting.TitleBlurColor, EpgSetting.TitleBlurCustColor);
+                    item.BodyGlowColor = EpgHeaderFormat.GetBlurColor(EpgSetting.BodyBlurColorEnabled, EpgSetting.BodyBlurColor, EpgSetting.BodyBlurCustColor);
+                    item.BandMode = true;
+                    item.DarkMode = EpgSetting.EpgDarkMode;
+                    item.BandGradation = EpgSetting.EpgGradation;
+                    item.BandBlurRadius = 10;
                     item.Initialize(programList.Item2, EpgSetting.EpgBorderLeftSize, EpgSetting.EpgBorderTopSize,
-                                    false, EpgSetting.EpgTitleIndent, EpgSetting.EpgExtInfoTable,
+                                    false, true, EpgSetting.EpgExtInfoTable,
                                     dictTitle, dicNormal, itemFontTitle, itemFontNormal,
                                     EpgSetting.FontSizeTitle, EpgSetting.FontSize, brushTitle, brushNormal,
-                                    EpgSetting.EpgBackColorA, contentBrushList);
+                                    EpgSetting.EpgBackColorA, contentBrushList, EpgSetting.EpgSymbolImage ? EpgSymbolImages.Get() : null);
+                    //背景、ぼかしの層、くっきりした文字の層に分けて重ねる
+                    List<EpgViewPanel> layerPanels = CreateRealBlurPanels(item);
                     item.InvalidateVisual();
                     canvas.Children.Add(item);
+                    foreach (EpgViewPanel layerPanel in layerPanels)
+                    {
+                        canvas.Children.Add(layerPanel);
+                    }
                     totalWidth += programList.Item1;
                 }
                 //包含するCanvasにも直接適用する(Bindingは遅延するため)。GridやStackPanelで包含してもよいはずだが
@@ -426,8 +492,75 @@ namespace EpgTimer.EpgView
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.ToString());
+                ShowError(ex);
             }
+        }
+
+        /// <summary>
+        /// 本物のぼかしのために、番組表のパネルと同じ位置・大きさ・文字の配置で、描く内容だけを分けた層のパネルを作る。
+        /// blurRadiusが0より大きいときは、この層全体にガウスぼかしをかける
+        /// </summary>
+        /// <summary>
+        /// 影の効果によるぼかしを使うため、背景、ぼかしの層(タイトル、タイトル以外、帯の中の時間)、くっきりした文字の層に分けるための、
+        /// 背景以外の層のパネルを作る。sourceは背景の層になる
+        /// </summary>
+        private List<EpgViewPanel> CreateRealBlurPanels(EpgViewPanel source)
+        {
+            var layerPanels = new List<EpgViewPanel>();
+            //ぼかしは、サービス名や時間軸と同じ影の効果で作る。背景、ぼかしの層、くっきりした文字の層に分けて重ねる
+            source.Layer = EpgViewPanel.PanelLayer.Background;
+            if (EpgSetting.TitleBlurRadius > 0)
+            {
+                layerPanels.Add(CreateLayerPanel(source, EpgViewPanel.PanelLayer.TitleGlow, EpgSetting.TitleBlurRadius));
+            }
+            if (EpgSetting.BodyBlurRadius > 0)
+            {
+                layerPanels.Add(CreateLayerPanel(source, EpgViewPanel.PanelLayer.BodyGlow, EpgSetting.BodyBlurRadius));
+            }
+            //帯の時間(分)は文字が細く、影が薄くなりやすいので、ぼかしの層を2枚重ねて濃くする
+            layerPanels.Add(CreateLayerPanel(source, EpgViewPanel.PanelLayer.BandGlow, source.BandBlurRadius));
+            layerPanels.Add(CreateLayerPanel(source, EpgViewPanel.PanelLayer.BandGlow, source.BandBlurRadius));
+            layerPanels.Add(CreateLayerPanel(source, EpgViewPanel.PanelLayer.Text, 0));
+            layerPanels.RemoveAll(panel => panel == null);
+            return layerPanels;
+        }
+
+        //ポップアップに重ねている、本物のぼかし用の層のパネル
+        private readonly List<EpgViewPanel> popupLayerPanels = new List<EpgViewPanel>();
+
+        private static EpgViewPanel CreateLayerPanel(EpgViewPanel source, EpgViewPanel.PanelLayer layer, double blurRadius)
+        {
+            Color? glowColor = null;
+            if (blurRadius > 0)
+            {
+                glowColor = source.GetLayerGlowColor(layer);
+                if (glowColor.HasValue == false)
+                {
+                    //ぼかしの色を決められない(文字色が単色でない)ときは、この層は作らない
+                    return null;
+                }
+            }
+            var panel = new EpgViewPanel();
+            panel.CopyLayoutFrom(source);
+            panel.Layer = layer;
+            panel.Width = source.Width;
+            panel.Height = source.Height;
+            panel.IsHitTestVisible = false;
+            Canvas.SetLeft(panel, Canvas.GetLeft(source));
+            if (glowColor.HasValue)
+            {
+                //サービス名や時間軸と同じ、影の効果(ずらさずにぼかすだけ)
+                var effect = new System.Windows.Media.Effects.DropShadowEffect()
+                {
+                    Color = glowColor.Value,
+                    ShadowDepth = 0,
+                    BlurRadius = Math.Min(blurRadius, 20),
+                    Opacity = 1
+                };
+                effect.Freeze();
+                panel.Effect = effect;
+            }
+            return panel;
         }
 
         private void canvas_MouseMove(object sender, MouseEventArgs e)
@@ -492,7 +625,7 @@ namespace EpgTimer.EpgView
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.ToString());
+                ShowError(ex);
             }
         }
 
@@ -522,7 +655,7 @@ namespace EpgTimer.EpgView
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.ToString());
+                ShowError(ex);
             }
         }
 
@@ -548,7 +681,7 @@ namespace EpgTimer.EpgView
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.ToString());
+                ShowError(ex);
             }
         }
 

@@ -33,7 +33,7 @@ namespace EpgTimer.EpgView
             stackPanel_day.Children.Clear();
         }
 
-        public void SetDay(List<DateTime> dayList, double serviceWidth, bool gradationHeader, bool isClickLeft)
+        public void SetDay(List<DateTime> dayList, double serviceWidth, bool gradationHeader, bool isClickLeft, Brush textBrush = null, double blurRadius = 0, Color? blurColor = null, int fontWeight = 700)
         {
             stackPanel_day.Children.Clear();
             if (serviceWidth > 2)
@@ -46,14 +46,27 @@ namespace EpgTimer.EpgView
                         Style = (Style)FindResource(
                             time.DayOfWeek == DayOfWeek.Saturday ? "AppEpgWeekDayHeaderSaturdayTextBlockStyle" :
                             time.DayOfWeek == DayOfWeek.Sunday ? "AppEpgWeekDayHeaderSundayTextBlockStyle" : "AppEpgWeekDayHeaderTextBlockStyle"),
-                        Text = time.ToString("M\\/d\r\n(ddd)"),
+                        Text = time.ToString("M\\/d(ddd)"),
                     };
+                    //フォントの太さ(設定値。スタイルの太字より優先する)
+                    item.FontWeight = FontWeight.FromOpenTypeWeight(Math.Max(1, Math.Min(999, fontWeight)));
+                    //文字色を指定しているときは既定の色(土日の色分け)より優先する
+                    if (textBrush != null)
+                    {
+                        item.Foreground = textBrush;
+                    }
                     var border = new Border()
                     {
                         BorderThickness = new Thickness(),
                         Child = item,
                         Style = (Style)FindResource("AppEpgWeekDayHeaderTextBorderStyle"),
                     };
+                    //文字の背景のぼかし(色は文字色に合わせる)。文字と枠の両方に影を付ける
+                    if (blurRadius > 0)
+                    {
+                        EpgHeaderFormat.SetTextBlur(border, blurRadius, item.Foreground, blurColor);
+                        EpgHeaderFormat.SetTextBlur(item, blurRadius, item.Foreground, blurColor);
+                    }
                     var backgroundColor = (Color)FindResource(
                         time.DayOfWeek == DayOfWeek.Saturday ? "AppEpgWeekDayHeaderSaturdayTextBackgroundColor" :
                         time.DayOfWeek == DayOfWeek.Sunday ? "AppEpgWeekDayHeaderSundayTextBackgroundColor" : "AppEpgWeekDayHeaderTextBackgroundColor");

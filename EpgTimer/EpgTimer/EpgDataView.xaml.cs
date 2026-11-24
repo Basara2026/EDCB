@@ -33,6 +33,73 @@ namespace EpgTimer
         }
 
         /// <summary>
+        /// 番組表の切り替え(Favorite、地上デジタル放送など)や、日付・時間帯のメニューの内容が変わったとき
+        /// </summary>
+        public event EventHandler NavigationChanged;
+
+        private void RaiseNavigationChanged()
+        {
+            if (NavigationChanged != null)
+            {
+                NavigationChanged(this, EventArgs.Empty);
+            }
+        }
+
+        /// <summary>
+        /// 番組表の切り替え(Favorite、地上デジタル放送など)のタブの見出しを表示するかどうか。
+        /// 隠しても内容は表示される(切り替えはメニューから行う)
+        /// </summary>
+        public void SetHeaderVisible(bool visible)
+        {
+            TabHeaderLayout.SetHeaderVisible(tabControl, visible);
+        }
+
+        /// <summary>
+        /// 番組表の切り替えの名前の一覧
+        /// </summary>
+        public List<string> GetTabNames()
+        {
+            return tabControl.Items.OfType<TabItem>().Select(item => item.Header == null ? "" : item.Header.ToString()).ToList();
+        }
+
+        /// <summary>
+        /// 選択中の番組表の切り替えの位置
+        /// </summary>
+        public int SelectedTabIndex
+        {
+            get { return tabControl.SelectedIndex; }
+            set
+            {
+                if (value >= 0 && value < tabControl.Items.Count)
+                {
+                    tabControl.SelectedIndex = value;
+                }
+            }
+        }
+
+        /// <summary>
+        /// 選択中の番組表の日付・時間帯のプルダウンメニュー(標準モード)、またはサービス選択のプルダウン(1週間モード)。それ以外ではnull
+        /// </summary>
+        public FrameworkElement GetSelectedDatePulldown()
+        {
+            var tabItem = tabControl.SelectedItem as TabItem;
+            if (tabItem != null)
+            {
+                var view = tabItem.Content as EpgMainView;
+                if (view != null)
+                {
+                    return view.DatePullDown;
+                }
+                var weekView = tabItem.Content as EpgWeekMainView;
+                if (weekView != null)
+                {
+                    return weekView.ServicePullDown;
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
         /// EPGデータの更新通知
         /// </summary>
         public void UpdateEpgData()
@@ -214,6 +281,7 @@ namespace EpgTimer
                 {
                     tabControl.SelectedIndex = 0;
                 }
+                RaiseNavigationChanged();
             }
             return true;
         }
@@ -375,6 +443,7 @@ namespace EpgTimer
                         tabItem.Content = epgView;
                         epgView.ScrollTo(scrollToTarget, false);
                     }
+                    RaiseNavigationChanged();
                     break;
                 }
             }
@@ -391,6 +460,7 @@ namespace EpgTimer
                 }
                 selectedTabItem = item;
             }
+            RaiseNavigationChanged();
         }
     }
 }

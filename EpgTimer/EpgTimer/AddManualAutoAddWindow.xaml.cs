@@ -23,6 +23,7 @@ namespace EpgTimer
         public AddManualAutoAddWindow()
         {
             InitializeComponent();
+            WindowPlacement.Apply(this, "AddManualAutoAddWindow");
 
             {
                 comboBox_startHH.ItemsSource = Enumerable.Range(0, 24);

@@ -13,7 +13,7 @@
     </UserControl.Resources>
     <TabControl>
         <TabItem Header="基本">
-            <StackPanel Margin="{StaticResource AppEdgeMarginLTR}" Name="grid_basic" DataContextChanged="grid_basic_DataContextChanged">
+            <StackPanel Margin="{StaticResource AppEdgeMarginLTR}" Name="grid_basic">
                 <StackPanel Orientation="Horizontal">
                     <Label Content="デザイン" Style="{StaticResource AppTermLabelStyle}" />
                     <UniformGrid Rows="1">
@@ -39,25 +39,82 @@
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
                         <Label Content="タイトル" Style="{StaticResource AppTermLabelStyle}" />
                         <Label Content="フォント" Grid.Column="1" Style="{StaticResource AppTermLabelStyle}" />
                         <ComboBox Grid.Column="2" IsEditable="True" Name="comboBox_fontTitle" Style="{StaticResource AppComboBoxStyle}" Text="{Binding FontNameTitle}" />
                         <Label Content="サイズ" Grid.Column="3" Margin="{StaticResource AppMarginL}" Style="{StaticResource AppTermLabelStyle}" />
-                        <TextBox Grid.Column="4" InputMethod.IsInputMethodEnabled="False" Style="{StaticResource AppNarrowTextBoxStyle}" Text="{Binding FontSizeTitle}" />
-                        <CheckBox Content="太字" Grid.Column="5" IsChecked="{Binding FontBoldTitle}" Margin="{StaticResource AppMarginL}" Style="{StaticResource AppCheckBoxStyle}" />
-                        <ComboBox Grid.Column="6" HorizontalAlignment="Left" ItemsSource="{Binding Source={x:Static local:ColorDef.BrushNames}}" ItemTemplate="{StaticResource AppColorNameItemTemplate}" Name="comboBox_colorTitle_ref" SelectedIndex="8" Style="{StaticResource AppComboBoxStyle}" Visibility="Hidden" />
-                        <ComboBox Grid.Column="6" ItemsSource="{Binding Source={x:Static local:ColorDef.BrushNames}}" ItemTemplate="{StaticResource AppColorNameItemTemplate}" Margin="{StaticResource AppMarginLR}" Name="comboBox_colorTitle1" Style="{StaticResource AppComboBoxStyle}" TextSearch.TextPath="Key" Width="{Binding ActualWidth, ElementName=comboBox_colorTitle_ref}" SelectionChanged="comboBox_color_SelectionChanged" />
-                        <Label Content="カスタム色" Grid.Column="7" Margin="{StaticResource AppMarginB}" Style="{StaticResource AppLabelStyle}" Visibility="Hidden" />
-                        <Button Grid.Column="7" Name="button_colorTitle1" Style="{StaticResource AppButtonStyle}" Click="button_Color_Click" />
+                        <local:SpinTextBox Grid.Column="4" InputMethod.IsInputMethodEnabled="False" Text="{Binding FontSizeTitle}" />
+                        <StackPanel Grid.Column="5" Grid.ColumnSpan="3" Orientation="Horizontal">
+                        <Label Content="太さ" Margin="{StaticResource AppMarginL}" Style="{StaticResource AppTermLabelStyle}" />
+                        <Slider IsSnapToTickEnabled="True" LargeChange="100" Maximum="900" Minimum="100" Name="slider_weightTitle" SmallChange="100" TickFrequency="100" ToolTip="100(細い)〜900(太い)。フォントに用意されている太さのうち、近いものが使われます(太さの種類がないフォントでは変わらないことがあります)" Value="{Binding FontWeightTitle}" VerticalAlignment="Center" Width="150" />
+                        <Label Content="{Binding Value, ElementName=slider_weightTitle}" MinWidth="36" Style="{StaticResource AppLabelStyle}" />
+                        </StackPanel>
                         <FrameworkElement Grid.Row="1" Margin="{StaticResource AppMarginT}" />
                         <Label Content="タイトル以外" Grid.Row="2" Style="{StaticResource AppTermLabelStyle}" />
                         <Label Content="フォント" Grid.Column="1" Grid.Row="2" Style="{StaticResource AppTermLabelStyle}" />
                         <ComboBox Grid.Column="2" Grid.Row="2" IsEditable="True" Name="comboBox_font" Style="{StaticResource AppComboBoxStyle}" Text="{Binding FontName}" />
                         <Label Content="サイズ" Grid.Column="3" Grid.Row="2" Margin="{StaticResource AppMarginL}" Style="{StaticResource AppTermLabelStyle}" />
-                        <TextBox Grid.Column="4" Grid.Row="2" InputMethod.IsInputMethodEnabled="False" Style="{StaticResource AppNarrowTextBoxStyle}" Text="{Binding FontSize}" />
-                        <ComboBox Grid.Column="6" Grid.Row="2" ItemsSource="{Binding Source={x:Static local:ColorDef.BrushNames}}" ItemTemplate="{StaticResource AppColorNameItemTemplate}" Margin="{StaticResource AppMarginLR}" Name="comboBox_colorTitle2" Style="{StaticResource AppComboBoxStyle}" TextSearch.TextPath="Key" Width="{Binding ActualWidth, ElementName=comboBox_colorTitle_ref}" SelectionChanged="comboBox_color_SelectionChanged" />
-                        <Button Grid.Column="7" Grid.Row="2" Name="button_colorTitle2" Style="{StaticResource AppButtonStyle}" Click="button_Color_Click" />
+                        <local:SpinTextBox Grid.Column="4" Grid.Row="2" InputMethod.IsInputMethodEnabled="False" Text="{Binding FontSize}" />
+                        <StackPanel Grid.Column="5" Grid.ColumnSpan="3" Grid.Row="2" Orientation="Horizontal">
+                        <Label Content="太さ" Margin="{StaticResource AppMarginL}" Style="{StaticResource AppTermLabelStyle}" />
+                        <Slider IsSnapToTickEnabled="True" LargeChange="100" Maximum="900" Minimum="100" Name="slider_weightNormal" SmallChange="100" TickFrequency="100" ToolTip="100(細い)〜900(太い)。フォントに用意されている太さのうち、近いものが使われます(太さの種類がないフォントでは変わらないことがあります)" Value="{Binding FontWeightNormal}" VerticalAlignment="Center" Width="150" />
+                        <Label Content="{Binding Value, ElementName=slider_weightNormal}" MinWidth="36" Style="{StaticResource AppLabelStyle}" />
+                        </StackPanel>
+                        <FrameworkElement Grid.Row="3" Margin="{StaticResource AppMarginT}" />
+                        <Label Content="サービス名" Grid.Row="4" Style="{StaticResource AppTermLabelStyle}" />
+                        <Label Content="フォント" Grid.Column="1" Grid.Row="4" Style="{StaticResource AppTermLabelStyle}" />
+                        <ComboBox Grid.Column="2" Grid.Row="4" IsEditable="True" Name="comboBox_fontHeader" Style="{StaticResource AppComboBoxStyle}" Text="{Binding FontNameHeader}" />
+                        <Label Content="サイズ" Grid.Column="3" Grid.Row="4" Margin="{StaticResource AppMarginL}" Style="{StaticResource AppTermLabelStyle}" />
+                        <local:SpinTextBox Grid.Column="4" Grid.Row="4" InputMethod.IsInputMethodEnabled="False" Text="{Binding FontSizeHeader}" />
+                        <StackPanel Grid.Column="5" Grid.ColumnSpan="3" Grid.Row="4" Orientation="Horizontal">
+                            <Label Content="行の高さ" Margin="{StaticResource AppMarginL}" Style="{StaticResource AppTermLabelStyle}" />
+                            <local:SpinTextBox InputMethod.IsInputMethodEnabled="False" Fallback="0" Minimum="0" Text="{Binding HeaderHeight}" Width="120" />
+                            <Label Content="px" Margin="{StaticResource AppMarginL}" Style="{StaticResource AppLabelStyle}" />
+                            <Label Content="太さ" Margin="{StaticResource AppWideMarginL}" Style="{StaticResource AppTermLabelStyle}" />
+                            <Slider IsSnapToTickEnabled="True" LargeChange="100" Maximum="900" Minimum="100" Name="slider_weightHeader" SmallChange="100" TickFrequency="100" ToolTip="100(細い)〜900(太い)。フォントに用意されている太さのうち、近いものが使われます(太さの種類がないフォントでは変わらないことがあります)" Value="{Binding FontWeightHeader}" VerticalAlignment="Center" Width="120" />
+                            <Label Content="{Binding Value, ElementName=slider_weightHeader}" MinWidth="30" Style="{StaticResource AppLabelStyle}" />
+                        </StackPanel>
+                        <FrameworkElement Grid.Row="5" Margin="{StaticResource AppMarginT}" />
+                        <Label Content="日付(1週間モード)" Grid.Row="6" Style="{StaticResource AppTermLabelStyle}" />
+                        <Label Content="フォント" Grid.Column="1" Grid.Row="6" Style="{StaticResource AppTermLabelStyle}" />
+                        <ComboBox Grid.Column="2" Grid.Row="6" IsEditable="True" Name="comboBox_fontHeaderWeek" Style="{StaticResource AppComboBoxStyle}" Text="{Binding FontNameHeaderWeek}" />
+                        <Label Content="サイズ" Grid.Column="3" Grid.Row="6" Margin="{StaticResource AppMarginL}" Style="{StaticResource AppTermLabelStyle}" />
+                        <local:SpinTextBox Grid.Column="4" Grid.Row="6" InputMethod.IsInputMethodEnabled="False" Text="{Binding FontSizeHeaderWeek}" />
+                        <StackPanel Grid.Column="5" Grid.ColumnSpan="3" Grid.Row="6" Orientation="Horizontal">
+                            <Label Content="行の高さ" Margin="{StaticResource AppMarginL}" Style="{StaticResource AppTermLabelStyle}" />
+                            <local:SpinTextBox InputMethod.IsInputMethodEnabled="False" Fallback="0" Minimum="0" Text="{Binding HeaderHeightWeek}" Width="120" />
+                            <Label Content="px" Margin="{StaticResource AppMarginL}" Style="{StaticResource AppLabelStyle}" />
+                            <Label Content="太さ" Margin="{StaticResource AppWideMarginL}" Style="{StaticResource AppTermLabelStyle}" />
+                            <Slider IsSnapToTickEnabled="True" LargeChange="100" Maximum="900" Minimum="100" Name="slider_weightHeaderWeek" SmallChange="100" TickFrequency="100" ToolTip="100(細い)〜900(太い)。フォントに用意されている太さのうち、近いものが使われます(太さの種類がないフォントでは変わらないことがあります)" Value="{Binding FontWeightHeaderWeek}" VerticalAlignment="Center" Width="120" />
+                            <Label Content="{Binding Value, ElementName=slider_weightHeaderWeek}" MinWidth="30" Style="{StaticResource AppLabelStyle}" />
+                        </StackPanel>
+                        <FrameworkElement Grid.Row="7" Margin="{StaticResource AppMarginT}" />
+                        <Label Content="時間軸" Grid.Row="8" Style="{StaticResource AppTermLabelStyle}" />
+                        <Label Content="フォント" Grid.Column="1" Grid.Row="8" Style="{StaticResource AppTermLabelStyle}" />
+                        <ComboBox Grid.Column="2" Grid.Row="8" IsEditable="True" Name="comboBox_fontTimeHeader" Style="{StaticResource AppComboBoxStyle}" Text="{Binding FontNameTimeHeader}" />
+                        <Label Content="サイズ" Grid.Column="3" Grid.Row="8" Margin="{StaticResource AppMarginL}" Style="{StaticResource AppTermLabelStyle}" />
+                        <local:SpinTextBox Grid.Column="4" Grid.Row="8" InputMethod.IsInputMethodEnabled="False" Text="{Binding FontSizeTimeHeader}" />
+                        <StackPanel Grid.Column="5" Grid.ColumnSpan="3" Grid.Row="8" Orientation="Horizontal">
+                            <Label Content="表示位置" Margin="{StaticResource AppMarginL}" Style="{StaticResource AppTermLabelStyle}" />
+                            <ComboBox PreviewKeyDown="comboBox_NoContextMenu_PreviewKeyDown" PreviewMouseRightButtonUp="comboBox_NoContextMenu_PreviewMouseRightButtonUp" SelectedIndex="{Binding TimeHeaderPlace}" Style="{StaticResource AppComboBoxStyle}" Width="150">
+                                <ComboBoxItem Content="両端" />
+                                <ComboBoxItem Content="左端のみ" />
+                                <ComboBoxItem Content="右端のみ" />
+                            </ComboBox>
+                            <Label Content="幅" Margin="{StaticResource AppWideMarginL}" Style="{StaticResource AppTermLabelStyle}" />
+                            <local:SpinTextBox InputMethod.IsInputMethodEnabled="False" Fallback="0" Minimum="0" Text="{Binding TimeHeaderWidth}" Width="120" />
+                            <Label Content="px" Margin="{StaticResource AppMarginL}" Style="{StaticResource AppLabelStyle}" />
+                            <Label Content="太さ" Margin="{StaticResource AppWideMarginL}" Style="{StaticResource AppTermLabelStyle}" />
+                            <Slider IsSnapToTickEnabled="True" LargeChange="100" Maximum="900" Minimum="100" Name="slider_weightTimeHeader" SmallChange="100" TickFrequency="100" ToolTip="100(細い)〜900(太い)。フォントに用意されている太さのうち、近いものが使われます(太さの種類がないフォントでは変わらないことがあります)" Value="{Binding FontWeightTimeHeader}" VerticalAlignment="Center" Width="120" />
+                            <Label Content="{Binding Value, ElementName=slider_weightTimeHeader}" MinWidth="30" Style="{StaticResource AppLabelStyle}" />
+                        </StackPanel>
                     </Grid>
                 </GroupBox>
                 <GroupBox Header="表示" Margin="{StaticResource AppEdgeMarginT}">
@@ -79,6 +136,8 @@
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
                             <Label Content="マウス縦スクロールサイズ" Style="{StaticResource AppTermLabelStyle}" />
                             <TextBox Grid.Column="1" InputMethod.IsInputMethodEnabled="False" IsEnabled="{Binding IsChecked, Converter={StaticResource invert}, ElementName=checkBox_mouseScrollAuto}" Style="{StaticResource AppNarrowTextBoxStyle}" Text="{Binding ScrollSize}" />
@@ -90,6 +149,10 @@
                             <FrameworkElement Grid.Row="3" Margin="{StaticResource AppMarginT}" />
                             <Label Content="サービス１つの幅" Grid.Row="4" Style="{StaticResource AppTermLabelStyle}" />
                             <TextBox Grid.Column="1" Grid.Row="4" InputMethod.IsInputMethodEnabled="False" Style="{StaticResource AppNarrowTextBoxStyle}" Text="{Binding ServiceWidth}" />
+                            <FrameworkElement Grid.Row="5" Margin="{StaticResource AppMarginT}" />
+                            <Label Content="サービスのロゴの高さ" Grid.Row="6" Style="{StaticResource AppTermLabelStyle}" />
+                            <TextBox Grid.Column="1" Grid.Row="6" InputMethod.IsInputMethodEnabled="False" Style="{StaticResource AppNarrowTextBoxStyle}" Text="{Binding ServiceLogoHeight}" />
+                            <Label Content="px (標準モード。0で行の高さに合わせる)" Grid.Column="2" Grid.ColumnSpan="6" Grid.Row="6" Margin="{StaticResource AppMarginL}" Style="{StaticResource AppLabelStyle}" />
                             <Label Content="1分あたりの高さ" Grid.Column="3" Margin="{StaticResource AppIndentMargin}" Style="{StaticResource AppTermLabelStyle}" />
                             <TextBox Grid.Column="4" InputMethod.IsInputMethodEnabled="False" Style="{StaticResource AppNarrowTextBoxStyle}" Text="{Binding MinHeight}" />
                             <Label Content="ドラッグスクロール倍率" Grid.Column="3" Grid.Row="2" Margin="{StaticResource AppIndentMargin}" Style="{StaticResource AppTermLabelStyle}" />
@@ -104,6 +167,7 @@
                             <StackPanel DockPanel.Dock="Left">
                                 <CheckBox Content="番組内容表示位置を番組名表示位置にあわせる" HorizontalAlignment="Left" IsChecked="{Binding EpgTitleIndent}" Style="{StaticResource AppCheckBoxStyle}" />
                                 <CheckBox Content="詳細も表示" HorizontalAlignment="Left" IsChecked="{Binding EpgExtInfoTable}" Margin="{StaticResource AppMarginT}" Style="{StaticResource AppCheckBoxStyle}" />
+                                <CheckBox Content="番組表記号([字]など)を画像で表示する" HorizontalAlignment="Left" IsChecked="{Binding EpgSymbolImage}" Margin="{StaticResource AppMarginT}" Style="{StaticResource AppCheckBoxStyle}" />
                                 <CheckBox Content="詳細をツールチップ表示する" HorizontalAlignment="Left" IsChecked="{Binding EpgToolTip}" Margin="{StaticResource AppMarginT}" Name="checkBox_descToolTip" Style="{StaticResource AppCheckBoxStyle}" />
                                 <StackPanel IsEnabled="{Binding IsChecked, ElementName=checkBox_descToolTip, UpdateSourceTrigger=PropertyChanged}" Margin="{StaticResource AppIndentMargin}">
                                     <CheckBox Content="番組名を表示しきれない物のみ表示" HorizontalAlignment="Left" IsChecked="{Binding EpgToolTipNoViewOnly}" Margin="{StaticResource AppMarginT}" Style="{StaticResource AppCheckBoxStyle}" />
@@ -113,9 +177,15 @@
                                     </StackPanel>
                                 </StackPanel>
                                 <CheckBox Content="番組内容をポップアップ表示する" HorizontalAlignment="Left" IsChecked="{Binding EpgPopup}" Margin="{StaticResource AppMarginT}" Name="checkBox_epgPopup" Style="{StaticResource AppCheckBoxStyle}" />
-                                <StackPanel IsEnabled="{Binding IsChecked, ElementName=checkBox_epgPopup, UpdateSourceTrigger=PropertyChanged}" Margin="{StaticResource AppIndentMargin}" Orientation="Horizontal">
-                                    <CheckBox Content="なるべく画面内に収める" IsChecked="{Binding EpgAdjustPopup}" Margin="{StaticResource AppMarginT}" Style="{StaticResource AppCheckBoxStyle}" />
-                                    <CheckBox Content="詳細も表示" IsChecked="{Binding EpgExtInfoPopup}" Margin="{StaticResource AppMarginLT}" Style="{StaticResource AppCheckBoxStyle}" />
+                                <StackPanel IsEnabled="{Binding IsChecked, ElementName=checkBox_epgPopup, UpdateSourceTrigger=PropertyChanged}" Margin="{StaticResource AppIndentMargin}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <CheckBox Content="なるべく画面内に収める" IsChecked="{Binding EpgAdjustPopup}" Margin="{StaticResource AppMarginT}" Style="{StaticResource AppCheckBoxStyle}" />
+                                        <CheckBox Content="詳細も表示" IsChecked="{Binding EpgExtInfoPopup}" Margin="{StaticResource AppMarginLT}" Style="{StaticResource AppCheckBoxStyle}" />
+                                    </StackPanel>
+                                    <StackPanel Margin="{StaticResource AppMarginT}" Orientation="Horizontal">
+                                        <Label Content="ポップアップの幅(0で番組の幅に合わせる)" Style="{StaticResource AppTermLabelStyle}" />
+                                        <TextBox InputMethod.IsInputMethodEnabled="False" Style="{StaticResource AppNarrowTextBoxStyle}" Text="{Binding EpgPopupWidth}" />
+                                    </StackPanel>
                                 </StackPanel>
                             </StackPanel>
                             <StackPanel Margin="{StaticResource AppIndentMargin}">
@@ -133,6 +203,7 @@
                             <CheckBox Content="番組" IsChecked="{Binding EpgGradation}" Style="{StaticResource AppCheckBoxStyle}" />
                             <CheckBox Content="サービス・時刻軸" IsChecked="{Binding EpgGradationHeader}" Margin="{StaticResource AppMarginL}" Style="{StaticResource AppCheckBoxStyle}" />
                         </StackPanel>
+                        <CheckBox Content="サービス名の下にネットワーク名・番号(リモコンキー)も表示する(標準モード)" HorizontalAlignment="Left" IsChecked="{Binding EpgServiceDetail}" Margin="{StaticResource AppWideMarginT}" Style="{StaticResource AppCheckBoxStyle}" />
                     </StackPanel>
                 </GroupBox>
             </StackPanel>
@@ -148,6 +219,99 @@
                     </UniformGrid>
                     <Label Content="※デフォルトデザインの設定の一部は番組表以外にも影響します。" IsEnabled="{Binding IsChecked, ElementName=radioButton_colorDesignDefault}" Margin="{StaticResource AppWideMarginL}" Style="{StaticResource AppLabelStyle}" />
                 </StackPanel>
+                <GroupBox Header="文字色" Margin="{StaticResource AppWideMarginT}">
+                    <Grid Margin="{StaticResource AppMargin}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition SharedSizeGroup="column0" Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition SharedSizeGroup="column2" Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+                        <Label Content="タイトル" Grid.Row="0" Style="{StaticResource AppTermLabelStyle}" />
+                        <ComboBox Grid.Column="1" Grid.Row="0" ItemsSource="{Binding Source={x:Static local:ColorDef.BrushNames}}" ItemTemplate="{StaticResource AppColorNameItemTemplate}" Margin="{StaticResource AppMarginR}" Name="comboBox_colorTitle1" Style="{StaticResource AppComboBoxStyle}" TextSearch.TextPath="Key" Width="{Binding ActualWidth, ElementName=comboBox_color_ref}" SelectionChanged="comboBox_color_SelectionChanged" />
+                        <Button Content="　　　　　" Grid.Column="2" Grid.Row="0" Name="button_colorTitle1" Style="{StaticResource AppButtonStyle}" Click="button_Color_Click" />
+                        <StackPanel Grid.Column="3" Grid.Row="0" Orientation="Horizontal">
+                            <Label Content="影のぼかし具合" Margin="{StaticResource AppMarginL}" Style="{StaticResource AppTermLabelStyle}" />
+                            <local:SpinTextBox InputMethod.IsInputMethodEnabled="False" Fallback="0" Minimum="0" Text="{Binding TitleBlurRadius}" Width="120" />
+                            <Label Content="px" Margin="{StaticResource AppMarginL}" Style="{StaticResource AppLabelStyle}" />
+                            <CheckBox Content="影の色" IsChecked="{Binding TitleBlurColorEnabled}" Margin="{StaticResource AppWideMarginL}" Name="checkBox_blurTitle" Style="{StaticResource AppCheckBoxStyle}" />
+                            <ComboBox IsEnabled="{Binding IsChecked, ElementName=checkBox_blurTitle}" ItemsSource="{Binding Source={x:Static local:ColorDef.BrushNames}}" ItemTemplate="{StaticResource AppColorNameItemTemplate}" Margin="{StaticResource AppMarginL}" Name="comboBox_blurTitle" Style="{StaticResource AppComboBoxStyle}" TextSearch.TextPath="Key" Width="{Binding ActualWidth, ElementName=comboBox_color_ref}" SelectionChanged="comboBox_color_SelectionChanged" />
+                            <Button Content="　　　　　" IsEnabled="{Binding IsChecked, ElementName=checkBox_blurTitle}" Margin="{StaticResource AppMarginL}" Name="button_blurTitle" Style="{StaticResource AppButtonStyle}" Click="button_Color_Click" />
+                        </StackPanel>
+                        <FrameworkElement Grid.Row="1" Margin="{StaticResource AppMarginT}" />
+                        <Label Content="タイトル以外" Grid.Row="2" Style="{StaticResource AppTermLabelStyle}" />
+                        <ComboBox Grid.Column="1" Grid.Row="2" ItemsSource="{Binding Source={x:Static local:ColorDef.BrushNames}}" ItemTemplate="{StaticResource AppColorNameItemTemplate}" Margin="{StaticResource AppMarginR}" Name="comboBox_colorTitle2" Style="{StaticResource AppComboBoxStyle}" TextSearch.TextPath="Key" Width="{Binding ActualWidth, ElementName=comboBox_color_ref}" SelectionChanged="comboBox_color_SelectionChanged" />
+                        <Button Content="　　　　　" Grid.Column="2" Grid.Row="2" Name="button_colorTitle2" Style="{StaticResource AppButtonStyle}" Click="button_Color_Click" />
+                        <StackPanel Grid.Column="3" Grid.Row="2" Orientation="Horizontal">
+                            <Label Content="影のぼかし具合" Margin="{StaticResource AppMarginL}" Style="{StaticResource AppTermLabelStyle}" />
+                            <local:SpinTextBox InputMethod.IsInputMethodEnabled="False" Fallback="0" Minimum="0" Text="{Binding BodyBlurRadius}" Width="120" />
+                            <Label Content="px" Margin="{StaticResource AppMarginL}" Style="{StaticResource AppLabelStyle}" />
+                            <CheckBox Content="影の色" IsChecked="{Binding BodyBlurColorEnabled}" Margin="{StaticResource AppWideMarginL}" Name="checkBox_blurBody" Style="{StaticResource AppCheckBoxStyle}" />
+                            <ComboBox IsEnabled="{Binding IsChecked, ElementName=checkBox_blurBody}" ItemsSource="{Binding Source={x:Static local:ColorDef.BrushNames}}" ItemTemplate="{StaticResource AppColorNameItemTemplate}" Margin="{StaticResource AppMarginL}" Name="comboBox_blurBody" Style="{StaticResource AppComboBoxStyle}" TextSearch.TextPath="Key" Width="{Binding ActualWidth, ElementName=comboBox_color_ref}" SelectionChanged="comboBox_color_SelectionChanged" />
+                            <Button Content="　　　　　" IsEnabled="{Binding IsChecked, ElementName=checkBox_blurBody}" Margin="{StaticResource AppMarginL}" Name="button_blurBody" Style="{StaticResource AppButtonStyle}" Click="button_Color_Click" />
+                        </StackPanel>
+                        <FrameworkElement Grid.Row="3" Margin="{StaticResource AppMarginT}" />
+                        <Label Content="サービス名" Grid.Row="4" Style="{StaticResource AppTermLabelStyle}" />
+                        <ComboBox Grid.Column="1" Grid.Row="4" ItemsSource="{Binding Source={x:Static local:ColorDef.BrushNames}}" ItemTemplate="{StaticResource AppColorNameItemTemplate}" Margin="{StaticResource AppMarginR}" Name="comboBox_serviceText" Style="{StaticResource AppComboBoxStyle}" TextSearch.TextPath="Key" Width="{Binding ActualWidth, ElementName=comboBox_color_ref}" SelectionChanged="comboBox_color_SelectionChanged" />
+                        <Button Content="　　　　　" Grid.Column="2" Grid.Row="4" Name="button_serviceText" Style="{StaticResource AppButtonStyle}" Click="button_Color_Click" />
+                        <StackPanel Grid.Column="3" Grid.Row="4" Orientation="Horizontal">
+                            <Label Content="影のぼかし具合" Margin="{StaticResource AppMarginL}" Style="{StaticResource AppTermLabelStyle}" />
+                            <local:SpinTextBox InputMethod.IsInputMethodEnabled="False" Fallback="0" Minimum="0" Text="{Binding ServiceBlurRadius}" Width="120" />
+                            <Label Content="px" Margin="{StaticResource AppMarginL}" Style="{StaticResource AppLabelStyle}" />
+                            <CheckBox Content="影の色" IsChecked="{Binding ServiceBlurColorEnabled}" Margin="{StaticResource AppWideMarginL}" Name="checkBox_blurService" Style="{StaticResource AppCheckBoxStyle}" />
+                            <ComboBox IsEnabled="{Binding IsChecked, ElementName=checkBox_blurService}" ItemsSource="{Binding Source={x:Static local:ColorDef.BrushNames}}" ItemTemplate="{StaticResource AppColorNameItemTemplate}" Margin="{StaticResource AppMarginL}" Name="comboBox_blurService" Style="{StaticResource AppComboBoxStyle}" TextSearch.TextPath="Key" Width="{Binding ActualWidth, ElementName=comboBox_color_ref}" SelectionChanged="comboBox_color_SelectionChanged" />
+                            <Button Content="　　　　　" IsEnabled="{Binding IsChecked, ElementName=checkBox_blurService}" Margin="{StaticResource AppMarginL}" Name="button_blurService" Style="{StaticResource AppButtonStyle}" Click="button_Color_Click" />
+                        </StackPanel>
+                        <FrameworkElement Grid.Row="5" Margin="{StaticResource AppMarginT}" />
+                        <Label Content="日付(1週間モード)" Grid.Row="6" Style="{StaticResource AppTermLabelStyle}" />
+                        <ComboBox Grid.Column="1" Grid.Row="6" ItemsSource="{Binding Source={x:Static local:ColorDef.BrushNames}}" ItemTemplate="{StaticResource AppColorNameItemTemplate}" Margin="{StaticResource AppMarginR}" Name="comboBox_weekDayText" Style="{StaticResource AppComboBoxStyle}" TextSearch.TextPath="Key" Width="{Binding ActualWidth, ElementName=comboBox_color_ref}" SelectionChanged="comboBox_color_SelectionChanged" />
+                        <Button Content="　　　　　" Grid.Column="2" Grid.Row="6" Name="button_weekDayText" Style="{StaticResource AppButtonStyle}" Click="button_Color_Click" />
+                        <StackPanel Grid.Column="3" Grid.Row="6" Orientation="Horizontal">
+                            <Label Content="影のぼかし具合" Margin="{StaticResource AppMarginL}" Style="{StaticResource AppTermLabelStyle}" />
+                            <local:SpinTextBox InputMethod.IsInputMethodEnabled="False" Fallback="0" Minimum="0" Text="{Binding WeekDayBlurRadius}" Width="120" />
+                            <Label Content="px" Margin="{StaticResource AppMarginL}" Style="{StaticResource AppLabelStyle}" />
+                            <CheckBox Content="影の色" IsChecked="{Binding WeekDayBlurColorEnabled}" Margin="{StaticResource AppWideMarginL}" Name="checkBox_blurWeekDay" Style="{StaticResource AppCheckBoxStyle}" />
+                            <ComboBox IsEnabled="{Binding IsChecked, ElementName=checkBox_blurWeekDay}" ItemsSource="{Binding Source={x:Static local:ColorDef.BrushNames}}" ItemTemplate="{StaticResource AppColorNameItemTemplate}" Margin="{StaticResource AppMarginL}" Name="comboBox_blurWeekDay" Style="{StaticResource AppComboBoxStyle}" TextSearch.TextPath="Key" Width="{Binding ActualWidth, ElementName=comboBox_color_ref}" SelectionChanged="comboBox_color_SelectionChanged" />
+                            <Button Content="　　　　　" IsEnabled="{Binding IsChecked, ElementName=checkBox_blurWeekDay}" Margin="{StaticResource AppMarginL}" Name="button_blurWeekDay" Style="{StaticResource AppButtonStyle}" Click="button_Color_Click" />
+                        </StackPanel>
+                        <FrameworkElement Grid.Row="7" Margin="{StaticResource AppMarginT}" />
+                        <Label Content="時間軸" Grid.Row="8" Style="{StaticResource AppTermLabelStyle}" />
+                        <ComboBox Grid.Column="1" Grid.Row="8" ItemsSource="{Binding Source={x:Static local:ColorDef.BrushNames}}" ItemTemplate="{StaticResource AppColorNameItemTemplate}" Margin="{StaticResource AppMarginR}" Name="comboBox_timeText" Style="{StaticResource AppComboBoxStyle}" TextSearch.TextPath="Key" Width="{Binding ActualWidth, ElementName=comboBox_color_ref}" SelectionChanged="comboBox_color_SelectionChanged" />
+                        <Button Content="　　　　　" Grid.Column="2" Grid.Row="8" Name="button_timeText" Style="{StaticResource AppButtonStyle}" Click="button_Color_Click" />
+                        <StackPanel Grid.Column="3" Grid.Row="8" Orientation="Horizontal">
+                            <Label Content="影のぼかし具合" Margin="{StaticResource AppMarginL}" Style="{StaticResource AppTermLabelStyle}" />
+                            <local:SpinTextBox InputMethod.IsInputMethodEnabled="False" Fallback="0" Minimum="0" Text="{Binding TimeBlurRadius}" Width="120" />
+                            <Label Content="px" Margin="{StaticResource AppMarginL}" Style="{StaticResource AppLabelStyle}" />
+                            <CheckBox Content="影の色" IsChecked="{Binding TimeBlurColorEnabled}" Margin="{StaticResource AppWideMarginL}" Name="checkBox_blurTime" Style="{StaticResource AppCheckBoxStyle}" />
+                            <ComboBox IsEnabled="{Binding IsChecked, ElementName=checkBox_blurTime}" ItemsSource="{Binding Source={x:Static local:ColorDef.BrushNames}}" ItemTemplate="{StaticResource AppColorNameItemTemplate}" Margin="{StaticResource AppMarginL}" Name="comboBox_blurTime" Style="{StaticResource AppComboBoxStyle}" TextSearch.TextPath="Key" Width="{Binding ActualWidth, ElementName=comboBox_color_ref}" SelectionChanged="comboBox_color_SelectionChanged" />
+                            <Button Content="　　　　　" IsEnabled="{Binding IsChecked, ElementName=checkBox_blurTime}" Margin="{StaticResource AppMarginL}" Name="button_blurTime" Style="{StaticResource AppButtonStyle}" Click="button_Color_Click" />
+                        </StackPanel>
+                        <FrameworkElement Grid.Row="9" Margin="{StaticResource AppMarginT}" />
+                        <Label Content="影は0でなし。黒系の文字はグレー、白系の文字は黒で影を付けます。(「影の色」にチェックを入れると、その色で影を付けます。)" Grid.ColumnSpan="4" Grid.Row="10" Style="{StaticResource AppLabelStyle}" />
+                    </Grid>
+                </GroupBox>
+                <GroupBox Header="表示モード" Margin="{StaticResource AppWideMarginT}">
+                    <StackPanel Margin="{StaticResource AppMargin}">
+                        <StackPanel Orientation="Horizontal">
+                            <CheckBox Content="カラーモード" HorizontalAlignment="Left" Name="checkBox_colorMode" Style="{StaticResource AppCheckBoxStyle}" Click="checkBox_displayMode_Click" />
+                            <CheckBox Content="ダークモード" HorizontalAlignment="Left" Margin="{StaticResource AppWideMarginL}" Name="checkBox_darkMode" Style="{StaticResource AppCheckBoxStyle}" Click="checkBox_displayMode_Click" />
+                        </StackPanel>
+                        <CheckBox Content="サービス背景を7色で繰り返す" HorizontalAlignment="Left" IsChecked="{Binding ServiceColorCycle}" Margin="{StaticResource AppWideMarginT}" Style="{StaticResource AppCheckBoxStyle}" ToolTip="青、緑、黄、橙、赤、紫、藍の順に、サービスの並び順で繰り返します(Gガイド風)。「サービス背景」の色は使いません" />
+                    </StackPanel>
+                </GroupBox>
                 <GroupBox Header="ジャンル別背景色" Margin="{StaticResource AppWideMarginT}">
                     <Grid Margin="{StaticResource AppMargin}">
                         <Grid.ColumnDefinitions>
@@ -177,70 +341,65 @@
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
-                        <Label Content="カスタム色" Grid.Column="2" Margin="{StaticResource AppMarginB}" Style="{StaticResource AppLabelStyle}" />
                         <FrameworkElement Grid.Column="3" Margin="{StaticResource AppIndentMargin}" />
-                        <Label Content="カスタム色" Grid.Column="6" Margin="{StaticResource AppMarginB}" Style="{StaticResource AppLabelStyle}" />
                         <FrameworkElement Grid.Column="7" Margin="{StaticResource AppIndentMargin}" />
-                        <Label Content="ニュース／報道" Grid.Row="1" Style="{StaticResource AppTermLabelStyle}" />
-                        <ComboBox Grid.Column="1" Grid.Row="1" HorizontalAlignment="Left" ItemsSource="{Binding Source={x:Static local:ColorDef.BrushNames}}" ItemTemplate="{StaticResource AppColorNameItemTemplate}" Name="comboBox_color_ref" SelectedIndex="8" Style="{StaticResource AppComboBoxStyle}" Visibility="Hidden" />
-                        <ComboBox Grid.Column="1" Grid.Row="1" ItemsSource="{Binding Source={x:Static local:ColorDef.BrushNames}}" ItemTemplate="{StaticResource AppColorNameItemTemplate}" Margin="{StaticResource AppMarginR}" Name="comboBox0" Style="{StaticResource AppComboBoxStyle}" TextSearch.TextPath="Key" Width="{Binding ActualWidth, ElementName=comboBox_color_ref}" SelectionChanged="comboBox_color_SelectionChanged" />
-                        <Button Grid.Column="2" Grid.Row="1" Name="button0" Style="{StaticResource AppButtonStyle}" Click="button_Color_Click" />
-                        <Label Content="スポーツ" Grid.Column="4" Grid.Row="1" Style="{StaticResource AppTermLabelStyle}" />
-                        <ComboBox Grid.Column="5" Grid.Row="1" ItemsSource="{Binding Source={x:Static local:ColorDef.BrushNames}}" ItemTemplate="{StaticResource AppColorNameItemTemplate}" Margin="{StaticResource AppMarginR}" Name="comboBox1" Style="{StaticResource AppComboBoxStyle}" TextSearch.TextPath="Key" Width="{Binding ActualWidth, ElementName=comboBox_color_ref}" SelectionChanged="comboBox_color_SelectionChanged" />
-                        <Button Grid.Column="6" Grid.Row="1" Name="button1" Style="{StaticResource AppButtonStyle}" Click="button_Color_Click" />
-                        <FrameworkElement Grid.Row="2" Margin="{StaticResource AppMarginT}" />
-                        <Label Content="情報／ワイドショー" Grid.Row="3" Style="{StaticResource AppTermLabelStyle}" />
-                        <ComboBox Grid.Column="1" Grid.Row="3" ItemsSource="{Binding Source={x:Static local:ColorDef.BrushNames}}" ItemTemplate="{StaticResource AppColorNameItemTemplate}" Margin="{StaticResource AppMarginR}" Name="comboBox2" Style="{StaticResource AppComboBoxStyle}" TextSearch.TextPath="Key" Width="{Binding ActualWidth, ElementName=comboBox_color_ref}" SelectionChanged="comboBox_color_SelectionChanged" />
-                        <Button Grid.Column="2" Grid.Row="3" Name="button2" Style="{StaticResource AppButtonStyle}" Click="button_Color_Click" />
-                        <Label Content="ドラマ" Grid.Column="4" Grid.Row="3" Style="{StaticResource AppTermLabelStyle}" />
-                        <ComboBox Grid.Column="5" Grid.Row="3" ItemsSource="{Binding Source={x:Static local:ColorDef.BrushNames}}" ItemTemplate="{StaticResource AppColorNameItemTemplate}" Margin="{StaticResource AppMarginR}" Name="comboBox3" Style="{StaticResource AppComboBoxStyle}" TextSearch.TextPath="Key" Width="{Binding ActualWidth, ElementName=comboBox_color_ref}" SelectionChanged="comboBox_color_SelectionChanged" />
-                        <Button Grid.Column="6" Grid.Row="3" Name="button3" Style="{StaticResource AppButtonStyle}" Click="button_Color_Click" />
-                        <FrameworkElement Grid.Row="4" Margin="{StaticResource AppMarginT}" />
-                        <Label Content="音楽" Grid.Row="5" Style="{StaticResource AppTermLabelStyle}" />
-                        <ComboBox Grid.Column="1" Grid.Row="5" ItemsSource="{Binding Source={x:Static local:ColorDef.BrushNames}}" ItemTemplate="{StaticResource AppColorNameItemTemplate}" Margin="{StaticResource AppMarginR}" Name="comboBox4" Style="{StaticResource AppComboBoxStyle}" TextSearch.TextPath="Key" Width="{Binding ActualWidth, ElementName=comboBox_color_ref}" SelectionChanged="comboBox_color_SelectionChanged" />
-                        <Button Grid.Column="2" Grid.Row="5" Name="button4" Style="{StaticResource AppButtonStyle}" Click="button_Color_Click" />
-                        <Label Content="バラエティ" Grid.Column="4" Grid.Row="5" Style="{StaticResource AppTermLabelStyle}" />
-                        <ComboBox Grid.Column="5" Grid.Row="5" ItemsSource="{Binding Source={x:Static local:ColorDef.BrushNames}}" ItemTemplate="{StaticResource AppColorNameItemTemplate}" Margin="{StaticResource AppMarginR}" Name="comboBox5" Style="{StaticResource AppComboBoxStyle}" TextSearch.TextPath="Key" Width="{Binding ActualWidth, ElementName=comboBox_color_ref}" SelectionChanged="comboBox_color_SelectionChanged" />
-                        <Button Grid.Column="6" Grid.Row="5" Name="button5" Style="{StaticResource AppButtonStyle}" Click="button_Color_Click" />
-                        <FrameworkElement Grid.Row="6" Margin="{StaticResource AppMarginT}" />
-                        <Label Content="映画" Grid.Row="7" Style="{StaticResource AppTermLabelStyle}" />
-                        <ComboBox Grid.Column="1" Grid.Row="7" ItemsSource="{Binding Source={x:Static local:ColorDef.BrushNames}}" ItemTemplate="{StaticResource AppColorNameItemTemplate}" Margin="{StaticResource AppMarginR}" Name="comboBox6" Style="{StaticResource AppComboBoxStyle}" TextSearch.TextPath="Key" Width="{Binding ActualWidth, ElementName=comboBox_color_ref}" SelectionChanged="comboBox_color_SelectionChanged" />
-                        <Button Grid.Column="2" Grid.Row="7" Name="button6" Style="{StaticResource AppButtonStyle}" Click="button_Color_Click" />
-                        <Label Content="アニメ／特撮" Grid.Column="4" Grid.Row="7" Style="{StaticResource AppTermLabelStyle}" />
-                        <ComboBox Grid.Column="5" Grid.Row="7" ItemsSource="{Binding Source={x:Static local:ColorDef.BrushNames}}" ItemTemplate="{StaticResource AppColorNameItemTemplate}" Margin="{StaticResource AppMarginR}" Name="comboBox7" Style="{StaticResource AppComboBoxStyle}" TextSearch.TextPath="Key" Width="{Binding ActualWidth, ElementName=comboBox_color_ref}" SelectionChanged="comboBox_color_SelectionChanged" />
-                        <Button Grid.Column="6" Grid.Row="7" Name="button7" Style="{StaticResource AppButtonStyle}" Click="button_Color_Click" />
-                        <FrameworkElement Grid.Row="8" Margin="{StaticResource AppMarginT}" />
-                        <Label Content="ドキュメンタリー／教養" Grid.Row="9" Style="{StaticResource AppTermLabelStyle}" />
-                        <ComboBox Grid.Column="1" Grid.Row="9" ItemsSource="{Binding Source={x:Static local:ColorDef.BrushNames}}" ItemTemplate="{StaticResource AppColorNameItemTemplate}" Margin="{StaticResource AppMarginR}" Name="comboBox8" Style="{StaticResource AppComboBoxStyle}" TextSearch.TextPath="Key" Width="{Binding ActualWidth, ElementName=comboBox_color_ref}" SelectionChanged="comboBox_color_SelectionChanged" />
-                        <Button Grid.Column="2" Grid.Row="9" Name="button8" Style="{StaticResource AppButtonStyle}" Click="button_Color_Click" />
-                        <Label Content="劇場／公演" Grid.Column="4" Grid.Row="9" Style="{StaticResource AppTermLabelStyle}" />
-                        <ComboBox Grid.Column="5" Grid.Row="9" ItemsSource="{Binding Source={x:Static local:ColorDef.BrushNames}}" ItemTemplate="{StaticResource AppColorNameItemTemplate}" Margin="{StaticResource AppMarginR}" Name="comboBox9" Style="{StaticResource AppComboBoxStyle}" TextSearch.TextPath="Key" Width="{Binding ActualWidth, ElementName=comboBox_color_ref}" SelectionChanged="comboBox_color_SelectionChanged" />
-                        <Button Grid.Column="6" Grid.Row="9" Name="button9" Style="{StaticResource AppButtonStyle}" Click="button_Color_Click" />
-                        <FrameworkElement Grid.Row="10" Margin="{StaticResource AppMarginT}" />
-                        <Label Content="趣味／教育" Grid.Row="11" Style="{StaticResource AppTermLabelStyle}" />
-                        <ComboBox Grid.Column="1" Grid.Row="11" ItemsSource="{Binding Source={x:Static local:ColorDef.BrushNames}}" ItemTemplate="{StaticResource AppColorNameItemTemplate}" Margin="{StaticResource AppMarginR}" Name="comboBox10" Style="{StaticResource AppComboBoxStyle}" TextSearch.TextPath="Key" Width="{Binding ActualWidth, ElementName=comboBox_color_ref}" SelectionChanged="comboBox_color_SelectionChanged" />
-                        <Button Grid.Column="2" Grid.Row="11" Name="button10" Style="{StaticResource AppButtonStyle}" Click="button_Color_Click" />
-                        <Label Content="福祉" Grid.Column="4" Grid.Row="11" Style="{StaticResource AppTermLabelStyle}" />
-                        <ComboBox Grid.Column="5" Grid.Row="11" ItemsSource="{Binding Source={x:Static local:ColorDef.BrushNames}}" ItemTemplate="{StaticResource AppColorNameItemTemplate}" Margin="{StaticResource AppMarginR}" Name="comboBox11" Style="{StaticResource AppComboBoxStyle}" TextSearch.TextPath="Key" Width="{Binding ActualWidth, ElementName=comboBox_color_ref}" SelectionChanged="comboBox_color_SelectionChanged" />
-                        <Button Grid.Column="6" Grid.Row="11" Name="button11" Style="{StaticResource AppButtonStyle}" Click="button_Color_Click" />
-                        <FrameworkElement Grid.Row="12" Margin="{StaticResource AppMarginT}" />
-                        <Label Content="その他" Grid.Row="13" Style="{StaticResource AppTermLabelStyle}" />
-                        <ComboBox Grid.Column="1" Grid.Row="13" ItemsSource="{Binding Source={x:Static local:ColorDef.BrushNames}}" ItemTemplate="{StaticResource AppColorNameItemTemplate}" Margin="{StaticResource AppMarginR}" Name="comboBox12" Style="{StaticResource AppComboBoxStyle}" TextSearch.TextPath="Key" Width="{Binding ActualWidth, ElementName=comboBox_color_ref}" SelectionChanged="comboBox_color_SelectionChanged" />
-                        <Button Grid.Column="2" Grid.Row="13" Name="button12" Style="{StaticResource AppButtonStyle}" Click="button_Color_Click" />
-                        <Label Content="なし" Grid.Column="4" Grid.Row="13" Style="{StaticResource AppTermLabelStyle}" />
-                        <ComboBox Grid.Column="5" Grid.Row="13" ItemsSource="{Binding Source={x:Static local:ColorDef.BrushNames}}" ItemTemplate="{StaticResource AppColorNameItemTemplate}" Margin="{StaticResource AppMarginR}" Name="comboBox13" Style="{StaticResource AppComboBoxStyle}" TextSearch.TextPath="Key" Width="{Binding ActualWidth, ElementName=comboBox_color_ref}" SelectionChanged="comboBox_color_SelectionChanged" />
-                        <Button Grid.Column="6" Grid.Row="13" Name="button13" Style="{StaticResource AppButtonStyle}" Click="button_Color_Click" />
-                        <FrameworkElement Grid.Row="14" Margin="{StaticResource AppMarginT}" />
-                        <Label Content="サービス背景" Grid.Row="15" Style="{StaticResource AppTermLabelStyle}" />
-                        <ComboBox Grid.Column="1" Grid.Row="15" ItemsSource="{Binding Source={x:Static local:ColorDef.BrushNames}}" ItemTemplate="{StaticResource AppColorNameItemTemplate}" Margin="{StaticResource AppMarginR}" Name="comboBox_service" Style="{StaticResource AppComboBoxStyle}" TextSearch.TextPath="Key" Width="{Binding ActualWidth, ElementName=comboBox_color_ref}" SelectionChanged="comboBox_color_SelectionChanged" />
-                        <Button Grid.Column="2" Grid.Row="15" Name="button_service" Style="{StaticResource AppButtonStyle}" Click="button_Color_Click" />
-                        <Label Content="番組表背景 (A値は強調表示用)" Grid.Column="4" Grid.ColumnSpan="2" Grid.Row="15" Style="{StaticResource AppTermLabelStyle}" />
-                        <Button Grid.Column="6" Grid.Row="15" Name="button_epgBack" Style="{StaticResource AppButtonStyle}" Click="button_Color_Click" />
-                        <Label Content="プリセット" Grid.Column="8" Grid.Row="11" Style="{StaticResource AppLabelStyle}" />
-                        <Button Content="明色" Grid.Column="8" Grid.Row="13" Style="{StaticResource AppButtonStyle}" Click="button_setLightDefault_Click" />
-                        <Button Content="暗色" Grid.Column="8" Grid.Row="15" Style="{StaticResource AppButtonStyle}" Click="button_setDarkDefault_Click" />
+                        <Label Content="ニュース／報道" Grid.Row="0" Style="{StaticResource AppTermLabelStyle}" />
+                        <ComboBox Grid.Column="1" Grid.Row="0" HorizontalAlignment="Left" ItemsSource="{Binding Source={x:Static local:ColorDef.BrushNames}}" ItemTemplate="{StaticResource AppColorNameItemTemplate}" Name="comboBox_color_ref" SelectedIndex="8" Style="{StaticResource AppComboBoxStyle}" Visibility="Hidden" />
+                        <ComboBox Grid.Column="1" Grid.Row="0" ItemsSource="{Binding Source={x:Static local:ColorDef.BrushNames}}" ItemTemplate="{StaticResource AppColorNameItemTemplate}" Margin="{StaticResource AppMarginR}" Name="comboBox0" Style="{StaticResource AppComboBoxStyle}" TextSearch.TextPath="Key" Width="{Binding ActualWidth, ElementName=comboBox_color_ref}" SelectionChanged="comboBox_color_SelectionChanged" />
+                        <Button Content="　　　　　" Grid.Column="2" Grid.Row="0" Name="button0" Style="{StaticResource AppButtonStyle}" Click="button_Color_Click" />
+                        <Label Content="スポーツ" Grid.Column="4" Grid.Row="0" Style="{StaticResource AppTermLabelStyle}" />
+                        <ComboBox Grid.Column="5" Grid.Row="0" ItemsSource="{Binding Source={x:Static local:ColorDef.BrushNames}}" ItemTemplate="{StaticResource AppColorNameItemTemplate}" Margin="{StaticResource AppMarginR}" Name="comboBox1" Style="{StaticResource AppComboBoxStyle}" TextSearch.TextPath="Key" Width="{Binding ActualWidth, ElementName=comboBox_color_ref}" SelectionChanged="comboBox_color_SelectionChanged" />
+                        <Button Content="　　　　　" Grid.Column="6" Grid.Row="0" Name="button1" Style="{StaticResource AppButtonStyle}" Click="button_Color_Click" />
+                        <FrameworkElement Grid.Row="1" Margin="{StaticResource AppMarginT}" />
+                        <Label Content="情報／ワイドショー" Grid.Row="2" Style="{StaticResource AppTermLabelStyle}" />
+                        <ComboBox Grid.Column="1" Grid.Row="2" ItemsSource="{Binding Source={x:Static local:ColorDef.BrushNames}}" ItemTemplate="{StaticResource AppColorNameItemTemplate}" Margin="{StaticResource AppMarginR}" Name="comboBox2" Style="{StaticResource AppComboBoxStyle}" TextSearch.TextPath="Key" Width="{Binding ActualWidth, ElementName=comboBox_color_ref}" SelectionChanged="comboBox_color_SelectionChanged" />
+                        <Button Content="　　　　　" Grid.Column="2" Grid.Row="2" Name="button2" Style="{StaticResource AppButtonStyle}" Click="button_Color_Click" />
+                        <Label Content="ドラマ" Grid.Column="4" Grid.Row="2" Style="{StaticResource AppTermLabelStyle}" />
+                        <ComboBox Grid.Column="5" Grid.Row="2" ItemsSource="{Binding Source={x:Static local:ColorDef.BrushNames}}" ItemTemplate="{StaticResource AppColorNameItemTemplate}" Margin="{StaticResource AppMarginR}" Name="comboBox3" Style="{StaticResource AppComboBoxStyle}" TextSearch.TextPath="Key" Width="{Binding ActualWidth, ElementName=comboBox_color_ref}" SelectionChanged="comboBox_color_SelectionChanged" />
+                        <Button Content="　　　　　" Grid.Column="6" Grid.Row="2" Name="button3" Style="{StaticResource AppButtonStyle}" Click="button_Color_Click" />
+                        <FrameworkElement Grid.Row="3" Margin="{StaticResource AppMarginT}" />
+                        <Label Content="音楽" Grid.Row="4" Style="{StaticResource AppTermLabelStyle}" />
+                        <ComboBox Grid.Column="1" Grid.Row="4" ItemsSource="{Binding Source={x:Static local:ColorDef.BrushNames}}" ItemTemplate="{StaticResource AppColorNameItemTemplate}" Margin="{StaticResource AppMarginR}" Name="comboBox4" Style="{StaticResource AppComboBoxStyle}" TextSearch.TextPath="Key" Width="{Binding ActualWidth, ElementName=comboBox_color_ref}" SelectionChanged="comboBox_color_SelectionChanged" />
+                        <Button Content="　　　　　" Grid.Column="2" Grid.Row="4" Name="button4" Style="{StaticResource AppButtonStyle}" Click="button_Color_Click" />
+                        <Label Content="バラエティ" Grid.Column="4" Grid.Row="4" Style="{StaticResource AppTermLabelStyle}" />
+                        <ComboBox Grid.Column="5" Grid.Row="4" ItemsSource="{Binding Source={x:Static local:ColorDef.BrushNames}}" ItemTemplate="{StaticResource AppColorNameItemTemplate}" Margin="{StaticResource AppMarginR}" Name="comboBox5" Style="{StaticResource AppComboBoxStyle}" TextSearch.TextPath="Key" Width="{Binding ActualWidth, ElementName=comboBox_color_ref}" SelectionChanged="comboBox_color_SelectionChanged" />
+                        <Button Content="　　　　　" Grid.Column="6" Grid.Row="4" Name="button5" Style="{StaticResource AppButtonStyle}" Click="button_Color_Click" />
+                        <FrameworkElement Grid.Row="5" Margin="{StaticResource AppMarginT}" />
+                        <Label Content="映画" Grid.Row="6" Style="{StaticResource AppTermLabelStyle}" />
+                        <ComboBox Grid.Column="1" Grid.Row="6" ItemsSource="{Binding Source={x:Static local:ColorDef.BrushNames}}" ItemTemplate="{StaticResource AppColorNameItemTemplate}" Margin="{StaticResource AppMarginR}" Name="comboBox6" Style="{StaticResource AppComboBoxStyle}" TextSearch.TextPath="Key" Width="{Binding ActualWidth, ElementName=comboBox_color_ref}" SelectionChanged="comboBox_color_SelectionChanged" />
+                        <Button Content="　　　　　" Grid.Column="2" Grid.Row="6" Name="button6" Style="{StaticResource AppButtonStyle}" Click="button_Color_Click" />
+                        <Label Content="アニメ／特撮" Grid.Column="4" Grid.Row="6" Style="{StaticResource AppTermLabelStyle}" />
+                        <ComboBox Grid.Column="5" Grid.Row="6" ItemsSource="{Binding Source={x:Static local:ColorDef.BrushNames}}" ItemTemplate="{StaticResource AppColorNameItemTemplate}" Margin="{StaticResource AppMarginR}" Name="comboBox7" Style="{StaticResource AppComboBoxStyle}" TextSearch.TextPath="Key" Width="{Binding ActualWidth, ElementName=comboBox_color_ref}" SelectionChanged="comboBox_color_SelectionChanged" />
+                        <Button Content="　　　　　" Grid.Column="6" Grid.Row="6" Name="button7" Style="{StaticResource AppButtonStyle}" Click="button_Color_Click" />
+                        <FrameworkElement Grid.Row="7" Margin="{StaticResource AppMarginT}" />
+                        <Label Content="ドキュメンタリー／教養" Grid.Row="8" Style="{StaticResource AppTermLabelStyle}" />
+                        <ComboBox Grid.Column="1" Grid.Row="8" ItemsSource="{Binding Source={x:Static local:ColorDef.BrushNames}}" ItemTemplate="{StaticResource AppColorNameItemTemplate}" Margin="{StaticResource AppMarginR}" Name="comboBox8" Style="{StaticResource AppComboBoxStyle}" TextSearch.TextPath="Key" Width="{Binding ActualWidth, ElementName=comboBox_color_ref}" SelectionChanged="comboBox_color_SelectionChanged" />
+                        <Button Content="　　　　　" Grid.Column="2" Grid.Row="8" Name="button8" Style="{StaticResource AppButtonStyle}" Click="button_Color_Click" />
+                        <Label Content="劇場／公演" Grid.Column="4" Grid.Row="8" Style="{StaticResource AppTermLabelStyle}" />
+                        <ComboBox Grid.Column="5" Grid.Row="8" ItemsSource="{Binding Source={x:Static local:ColorDef.BrushNames}}" ItemTemplate="{StaticResource AppColorNameItemTemplate}" Margin="{StaticResource AppMarginR}" Name="comboBox9" Style="{StaticResource AppComboBoxStyle}" TextSearch.TextPath="Key" Width="{Binding ActualWidth, ElementName=comboBox_color_ref}" SelectionChanged="comboBox_color_SelectionChanged" />
+                        <Button Content="　　　　　" Grid.Column="6" Grid.Row="8" Name="button9" Style="{StaticResource AppButtonStyle}" Click="button_Color_Click" />
+                        <FrameworkElement Grid.Row="9" Margin="{StaticResource AppMarginT}" />
+                        <Label Content="趣味／教育" Grid.Row="10" Style="{StaticResource AppTermLabelStyle}" />
+                        <ComboBox Grid.Column="1" Grid.Row="10" ItemsSource="{Binding Source={x:Static local:ColorDef.BrushNames}}" ItemTemplate="{StaticResource AppColorNameItemTemplate}" Margin="{StaticResource AppMarginR}" Name="comboBox10" Style="{StaticResource AppComboBoxStyle}" TextSearch.TextPath="Key" Width="{Binding ActualWidth, ElementName=comboBox_color_ref}" SelectionChanged="comboBox_color_SelectionChanged" />
+                        <Button Content="　　　　　" Grid.Column="2" Grid.Row="10" Name="button10" Style="{StaticResource AppButtonStyle}" Click="button_Color_Click" />
+                        <Label Content="福祉" Grid.Column="4" Grid.Row="10" Style="{StaticResource AppTermLabelStyle}" />
+                        <ComboBox Grid.Column="5" Grid.Row="10" ItemsSource="{Binding Source={x:Static local:ColorDef.BrushNames}}" ItemTemplate="{StaticResource AppColorNameItemTemplate}" Margin="{StaticResource AppMarginR}" Name="comboBox11" Style="{StaticResource AppComboBoxStyle}" TextSearch.TextPath="Key" Width="{Binding ActualWidth, ElementName=comboBox_color_ref}" SelectionChanged="comboBox_color_SelectionChanged" />
+                        <Button Content="　　　　　" Grid.Column="6" Grid.Row="10" Name="button11" Style="{StaticResource AppButtonStyle}" Click="button_Color_Click" />
+                        <FrameworkElement Grid.Row="11" Margin="{StaticResource AppMarginT}" />
+                        <Label Content="その他" Grid.Row="12" Style="{StaticResource AppTermLabelStyle}" />
+                        <ComboBox Grid.Column="1" Grid.Row="12" ItemsSource="{Binding Source={x:Static local:ColorDef.BrushNames}}" ItemTemplate="{StaticResource AppColorNameItemTemplate}" Margin="{StaticResource AppMarginR}" Name="comboBox12" Style="{StaticResource AppComboBoxStyle}" TextSearch.TextPath="Key" Width="{Binding ActualWidth, ElementName=comboBox_color_ref}" SelectionChanged="comboBox_color_SelectionChanged" />
+                        <Button Content="　　　　　" Grid.Column="2" Grid.Row="12" Name="button12" Style="{StaticResource AppButtonStyle}" Click="button_Color_Click" />
+                        <Label Content="なし" Grid.Column="4" Grid.Row="12" Style="{StaticResource AppTermLabelStyle}" />
+                        <ComboBox Grid.Column="5" Grid.Row="12" ItemsSource="{Binding Source={x:Static local:ColorDef.BrushNames}}" ItemTemplate="{StaticResource AppColorNameItemTemplate}" Margin="{StaticResource AppMarginR}" Name="comboBox13" Style="{StaticResource AppComboBoxStyle}" TextSearch.TextPath="Key" Width="{Binding ActualWidth, ElementName=comboBox_color_ref}" SelectionChanged="comboBox_color_SelectionChanged" />
+                        <Button Content="　　　　　" Grid.Column="6" Grid.Row="12" Name="button13" Style="{StaticResource AppButtonStyle}" Click="button_Color_Click" />
+                        <FrameworkElement Grid.Row="13" Margin="{StaticResource AppMarginT}" />
+                        <Label Content="サービス背景" Grid.Row="14" Style="{StaticResource AppTermLabelStyle}" />
+                        <ComboBox Grid.Column="1" Grid.Row="14" ItemsSource="{Binding Source={x:Static local:ColorDef.BrushNames}}" ItemTemplate="{StaticResource AppColorNameItemTemplate}" Margin="{StaticResource AppMarginR}" Name="comboBox_service" Style="{StaticResource AppComboBoxStyle}" TextSearch.TextPath="Key" Width="{Binding ActualWidth, ElementName=comboBox_color_ref}" SelectionChanged="comboBox_color_SelectionChanged" />
+                        <Button Content="　　　　　" Grid.Column="2" Grid.Row="14" Name="button_service" Style="{StaticResource AppButtonStyle}" Click="button_Color_Click" />
+                        <Label Content="番組表背景" Grid.Column="4" Grid.ColumnSpan="2" Grid.Row="14" Style="{StaticResource AppTermLabelStyle}" />
+                        <Button Content="　　　　　" Grid.Column="6" Grid.Row="14" Name="button_epgBack" Style="{StaticResource AppButtonStyle}" Click="button_Color_Click" />
+                        <Button Content="プリセット" Grid.Column="8" Grid.Row="14" Style="{StaticResource AppButtonStyle}" Click="button_setPreset_Click" />
                     </Grid>
                 </GroupBox>
                 <GroupBox Header="予約枠" Margin="{StaticResource AppWideMarginT}">
@@ -262,17 +421,17 @@
                             </Grid.RowDefinitions>
                             <Label Content="通常" Style="{StaticResource AppTermLabelStyle}" />
                             <ComboBox Grid.Column="1" ItemsSource="{Binding Source={x:Static local:ColorDef.BrushNames}}" ItemTemplate="{StaticResource AppColorNameItemTemplate}" Margin="{StaticResource AppMarginR}" Name="comboBox_reserveNormal" Style="{StaticResource AppComboBoxStyle}" TextSearch.TextPath="Key" Width="{Binding ActualWidth, ElementName=comboBox_color_ref}" SelectionChanged="comboBox_color_SelectionChanged" />
-                            <Button Grid.Column="2" Name="button14" Style="{StaticResource AppButtonStyle}" Click="button_Color_Click" />
+                            <Button Content="　　　　　" Grid.Column="2" Name="button14" Style="{StaticResource AppButtonStyle}" Click="button_Color_Click" />
                             <Label Content="無効" Grid.Column="4" Style="{StaticResource AppTermLabelStyle}" />
                             <ComboBox Grid.Column="5" ItemsSource="{Binding Source={x:Static local:ColorDef.BrushNames}}" ItemTemplate="{StaticResource AppColorNameItemTemplate}" Margin="{StaticResource AppMarginR}" Name="comboBox_reserveNo" Style="{StaticResource AppComboBoxStyle}" TextSearch.TextPath="Key" Width="{Binding ActualWidth, ElementName=comboBox_color_ref}" SelectionChanged="comboBox_color_SelectionChanged" />
-                            <Button Grid.Column="6" Name="button15" Style="{StaticResource AppButtonStyle}" Click="button_Color_Click" />
+                            <Button Content="　　　　　" Grid.Column="6" Name="button15" Style="{StaticResource AppButtonStyle}" Click="button_Color_Click" />
                             <FrameworkElement Grid.Row="1" Margin="{StaticResource AppMarginT}" />
                             <Label Content="チューナー不足" Grid.Row="2" Style="{StaticResource AppTermLabelStyle}" />
                             <ComboBox Grid.Column="1" Grid.Row="2" ItemsSource="{Binding Source={x:Static local:ColorDef.BrushNames}}" ItemTemplate="{StaticResource AppColorNameItemTemplate}" Margin="{StaticResource AppMarginR}" Name="comboBox_reserveNoTuner" Style="{StaticResource AppComboBoxStyle}" TextSearch.TextPath="Key" Width="{Binding ActualWidth, ElementName=comboBox_color_ref}" SelectionChanged="comboBox_color_SelectionChanged" />
-                            <Button Grid.Column="2" Grid.Row="2" Name="button16" Style="{StaticResource AppButtonStyle}" Click="button_Color_Click" />
+                            <Button Content="　　　　　" Grid.Column="2" Grid.Row="2" Name="button16" Style="{StaticResource AppButtonStyle}" Click="button_Color_Click" />
                             <Label Content="一部実行" Grid.Column="4" Grid.Row="2" Style="{StaticResource AppTermLabelStyle}" />
                             <ComboBox Grid.Column="5" Grid.Row="2" ItemsSource="{Binding Source={x:Static local:ColorDef.BrushNames}}" ItemTemplate="{StaticResource AppColorNameItemTemplate}" Margin="{StaticResource AppMarginR}" Name="comboBox_reserveWarning" Style="{StaticResource AppComboBoxStyle}" TextSearch.TextPath="Key" Width="{Binding ActualWidth, ElementName=comboBox_color_ref}" SelectionChanged="comboBox_color_SelectionChanged" />
-                            <Button Grid.Column="6" Grid.Row="2" Name="button17" Style="{StaticResource AppButtonStyle}" Click="button_Color_Click" />
+                            <Button Content="　　　　　" Grid.Column="6" Grid.Row="2" Name="button17" Style="{StaticResource AppButtonStyle}" Click="button_Color_Click" />
                         </Grid>
                         <Grid Margin="{StaticResource AppWideMarginT}">
                             <Grid.ColumnDefinitions>
@@ -286,6 +445,7 @@
                             <CheckBox Content="影付きで塗りつぶす" Grid.Column="2" IsChecked="{Binding ReserveRectFillWithShadow}" Margin="{StaticResource AppWideMarginL}" Style="{StaticResource AppCheckBoxStyle}" />
                         </Grid>
                         <CheckBox Content="時刻軸に線を引く" HorizontalAlignment="Left" IsChecked="{Binding ReserveRectShowMarker}" Margin="{StaticResource AppWideMarginT}" Style="{StaticResource AppCheckBoxStyle}" />
+                        <CheckBox Content="時間軸を1時間ごとに色を変える" HorizontalAlignment="Left" IsChecked="{Binding TimeColorGGuide}" Margin="{StaticResource AppMarginT}" Style="{StaticResource AppCheckBoxStyle}" />
                     </StackPanel>
                 </GroupBox>
             </StackPanel>
@@ -326,6 +486,30 @@
                     <CheckBox Content="標準モードのすべてのタブを同期スクロールする" HorizontalAlignment="Left" IsChecked="{Binding SynchronizeEpgScroll}" Margin="{StaticResource AppMarginT}" Style="{StaticResource AppCheckBoxStyle}" />
                     <CheckBox Content="サービス・日付を左クリックで表示モードを切り替える" HorizontalAlignment="Left" IsChecked="{Binding ToggleEpgModeOnHeaderLeftClick}" Margin="{StaticResource AppMarginT}" Style="{StaticResource AppCheckBoxStyle}" />
                 </StackPanel>
+            </Grid>
+        </TabItem>
+        <TabItem Header="サービス名">
+            <Grid Margin="{StaticResource AppEdgeMargin}">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+                <Label Content="番組表に表示するサービス名を変更できます。空欄にすると元の名前に戻ります。(表示上のみで内部のサービス名は変わりません。)" Margin="{StaticResource AppMarginTB}" Style="{StaticResource AppLabelStyle}" />
+                <ListView Grid.Row="1" Name="listView_serviceAlias" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                    <ListView.View>
+                        <GridView x:Name="gridView_serviceAlias">
+                            <GridViewColumn DisplayMemberBinding="{Binding Path=OriginalName}" Header="元のサービス名" Width="220" />
+                            <GridViewColumn DisplayMemberBinding="{Binding Path=NetworkName}" Header="ネットワーク" Width="100" />
+                            <GridViewColumn Header="表示名" Width="280">
+                                <GridViewColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBox Style="{StaticResource AppTextBoxStyle}" Text="{Binding Path=DisplayName, UpdateSourceTrigger=PropertyChanged}" Width="250" />
+                                    </DataTemplate>
+                                </GridViewColumn.CellTemplate>
+                            </GridViewColumn>
+                        </GridView>
+                    </ListView.View>
+                </ListView>
             </Grid>
         </TabItem>
     </TabControl>

@@ -29,6 +29,16 @@ namespace EpgTimer.TunerReserveViewCtrl
             set;
         }
 
+        /// <summary>
+        /// 白い背景で読める文字色(明るさが中間より暗い色)ならそのまま、明るい色ならfallbackにする
+        /// </summary>
+        private static Brush ReadableOnWhite(SolidColorBrush brush, Brush fallback)
+        {
+            Color c = brush.Color;
+            double luminance = (0.299 * c.R + 0.587 * c.G + 0.114 * c.B) / 255;
+            return luminance < 0.6 ? brush : fallback;
+        }
+
         protected override void OnRender(DrawingContext dc)
         {
             dc.DrawRectangle(Background, null, new Rect(RenderSize));
@@ -41,8 +51,8 @@ namespace EpgTimer.TunerReserveViewCtrl
             Matrix m = ps.CompositionTarget.TransformToDevice;
 
             EpgSetting epgSetting = Settings.Instance.EpgSettingList[0];
-            var itemFontTitle = new EpgView.EpgViewPanel.ItemFont(epgSetting.FontNameTitle, epgSetting.FontBoldTitle, true);
-            var itemFontNormal = new EpgView.EpgViewPanel.ItemFont(epgSetting.FontName, false, true);
+            var itemFontTitle = new EpgView.EpgViewPanel.ItemFont(epgSetting.FontNameTitle, epgSetting.FontWeightTitle, true);
+            var itemFontNormal = new EpgView.EpgViewPanel.ItemFont(epgSetting.FontName, epgSetting.FontWeightNormal, true);
             if (itemFontTitle.GlyphType == null || itemFontNormal.GlyphType == null)
             {
                 return;
@@ -53,11 +63,10 @@ namespace EpgTimer.TunerReserveViewCtrl
                 double sizeNormal = Math.Max(epgSetting.FontSize, 1);
                 double indentTitle = sizeTitle * 1.7;
                 double indentNormal = epgSetting.EpgTitleIndent ? indentTitle : 2;
-                Brush colorTitle = ColorDef.CustColorBrush(epgSetting.TitleColor1, epgSetting.TitleCustColor1);
-                Brush colorNormal = ColorDef.CustColorBrush(epgSetting.TitleColor2, epgSetting.TitleCustColor2);
-                //ジャンル「なし」の色
-                SolidColorBrush textAreaSolidBrush = ColorDef.CustColorBrush(epgSetting.ContentColorList[0x10], epgSetting.ContentCustColorList[0x10]);
-                Brush textAreaBrush = epgSetting.EpgGradation ? (Brush)ColorDef.GradientBrush(textAreaSolidBrush.Color) : textAreaSolidBrush;
+                //番組の背景は白。文字色が白に近いと読めないので、そのときは黒(タイトル)とDimGray(タイトル以外)にする
+                Brush colorTitle = ReadableOnWhite(ColorDef.CustColorBrush(epgSetting.TitleColor1, epgSetting.TitleCustColor1), Brushes.Black);
+                Brush colorNormal = ReadableOnWhite(ColorDef.CustColorBrush(epgSetting.TitleColor2, epgSetting.TitleCustColor2), Brushes.DimGray);
+                Brush textAreaBrush = Brushes.White;
                 //位置がずれないように枠線の幅が1より大きいときは両側で分け合う
                 double borderLeftSize = epgSetting.EpgBorderLeftSize;
                 double borderTopSize = epgSetting.EpgBorderTopSize;

@@ -458,10 +458,89 @@ namespace EpgTimer
             }
         }
 
+        /// <summary>
+        /// フォントの表示名(日本語名があれば日本語名)を返す。
+        /// バリアブルフォントなどは FontFamily.FamilyNames に日本語名がないことがあるので、フォント本体の名前も調べる
+        /// </summary>
+        public static string GetFontDisplayName(FontFamily family)
+        {
+            var ja = System.Windows.Markup.XmlLanguage.GetLanguage("ja-JP");
+            var jaCulture = new CultureInfo("ja-JP");
+            string s;
+            if (family.FamilyNames.TryGetValue(ja, out s))
+            {
+                return s;
+            }
+            try
+            {
+                foreach (Typeface typeface in family.GetTypefaces())
+                {
+                    GlyphTypeface glyphType;
+                    if (typeface.TryGetGlyphTypeface(out glyphType))
+                    {
+                        if (glyphType.FamilyNames.TryGetValue(jaCulture, out s) && string.IsNullOrWhiteSpace(s) == false ||
+                            glyphType.Win32FamilyNames.TryGetValue(jaCulture, out s) && string.IsNullOrWhiteSpace(s) == false)
+                        {
+                            return s;
+                        }
+                        break;
+                    }
+                }
+            }
+            catch
+            {
+            }
+            return family.Source;
+        }
+
+        /// <summary>
+        /// フォントの表示名の一覧を名前順に並べて返す
+        /// </summary>
+        public static List<string> GetSortedFontNames()
+        {
+            var names = new List<string>();
+            foreach (FontFamily family in Fonts.SystemFontFamilies)
+            {
+                names.Add(GetFontDisplayName(family));
+            }
+            return names.Distinct().OrderBy(a => a, StringComparer.Create(new CultureInfo("ja-JP"), true)).ToList();
+        }
+
+        private static Dictionary<string, string> fontSourceMap = null;
+
+        /// <summary>
+        /// 設定のフォント名からFontFamilyを作る。GetFontDisplayNameで得た日本語名にも対応する
+        /// </summary>
+        public static FontFamily CreateFontFamily(string name)
+        {
+            if (fontSourceMap == null)
+            {
+                var map = new Dictionary<string, string>();
+                try
+                {
+                    foreach (FontFamily family in Fonts.SystemFontFamilies)
+                    {
+                        string display = GetFontDisplayName(family);
+                        if (display != family.Source && map.ContainsKey(display) == false)
+                        {
+                            map[display] = family.Source;
+                        }
+                    }
+                }
+                catch
+                {
+                }
+                fontSourceMap = map;
+            }
+            string source;
+            return name != null && fontSourceMap.TryGetValue(name.Trim(), out source) ? new FontFamily(source) : new FontFamily(name);
+        }
+
         public class TimeDuration : IComparable<TimeDuration>, IComparable
         {
-            public TimeDuration(bool timeFlag, DateTime time, bool durationFlag, double durationSec)
+            public TimeDuration(bool timeFlag, DateTime time, bool durationFlag, double durationSec, bool compact = false)
             {
+                _compact = compact;
                 _time = timeFlag ? time : DateTime.MinValue;
                 _durationSec = durationFlag ? durationSec : double.MinValue;
             }
@@ -471,12 +550,12 @@ namespace EpgTimer
                 {
                     return "未定";
                 }
-                string endText = double.IsNaN(_durationSec) ? "" : _durationSec == double.MinValue ? " ～ 未定" : null;
+                string endText = double.IsNaN(_durationSec) ? "" : _durationSec == double.MinValue ? (_compact ? "-未定" : " ～ 未定") : null;
                 if (endText == null)
                 {
                     DateTime endTime = _time.AddSeconds(_durationSec);
                     //秒が0でない場合は秒を付加
-                    endText = endTime.ToString((forProgramText ? "～" : " ～ ") + "HH\\:mm" + (endTime.Second != 0 ? "\\:ss" : ""),
+                    endText = endTime.ToString((_compact ? "-" : forProgramText ? "～" : " ～ ") + "HH\\:mm" + (endTime.Second != 0 ? "\\:ss" : ""),
                                                forProgramText ? CultureInfo.InvariantCulture : null);
                 }
                 return _time.ToString("yyyy\\/MM\\/dd(" + (forProgramText ? "" + "日月火水木金土"[(int)_time.DayOfWeek] : "ddd") + ") HH\\:mm" + (_time.Second != 0 ? "\\:ss" : ""),
@@ -496,6 +575,8 @@ namespace EpgTimer
             }
             private DateTime _time;
             private double _durationSec;
+            //区切りを「-」にして、曜日の後ろや区切りの前後の空白を詰めた表記にする(予約一覧用)
+            private bool _compact;
         }
 
         public string ConvertReserveText(ReserveData reserveInfo)
@@ -611,6 +692,45 @@ namespace EpgTimer
             view += "連続録画動作 : " + (recSetting.ContinueRecFlag == 0 ? "分割" : "同一ファイル出力") + "\r\n" +
                     "使用チューナー強制指定 : " + (recSetting.TunerID == 0 ? "自動" : "ID:" + recSetting.TunerID.ToString("X8"));
             return view;
+        }
+
+        /// <summary>
+        /// 番組内容(番組情報・番組内容・詳細情報)をクリップボードにコピーする
+        /// </summary>
+        public static void CopyProgramText(EpgEventInfo eventInfo)
+        {
+            if (eventInfo != null)
+            {
+                CopyTextToClipboard(ConvertProgramCopyText(eventInfo));
+            }
+        }
+
+        /// <summary>
+        /// コピー用の番組内容テキスト(番組情報・番組内容・詳細情報)を作る
+        /// </summary>
+        public static string ConvertProgramCopyText(EpgEventInfo eventInfo)
+        {
+            return (ConvertProgramText(eventInfo, EventInfoTextMode.BasicInfoForProgramText) +
+                    ConvertProgramText(eventInfo, EventInfoTextMode.BasicTextForProgramText) +
+                    ConvertProgramText(eventInfo, EventInfoTextMode.ExtendedTextForProgramText)).TrimEnd('\r', '\n');
+        }
+
+        public static void CopyTextToClipboard(string text)
+        {
+            //他のアプリがクリップボードを開いているとき失敗することがあるので数回試す
+            for (int i = 0; i < 5; i++)
+            {
+                try
+                {
+                    Clipboard.SetDataObject(text, true);
+                    return;
+                }
+                catch (System.Runtime.InteropServices.ExternalException)
+                {
+                    System.Threading.Thread.Sleep(100);
+                }
+            }
+            MessageBox.Show("クリップボードにコピーできませんでした。");
         }
 
         public static string ConvertProgramText(EpgEventInfo eventInfo, EventInfoTextMode textMode)
@@ -968,7 +1088,7 @@ namespace EpgTimer
                         CreateSrvCtrl().SendNwPlayClose(info.ctrlID);
                         if (info.filePath != "")
                         {
-                            return FilePlay(info.filePath, reserveID, true);
+                            return FilePlay(info.filePath);
                         }
                     }
                 }
@@ -978,7 +1098,7 @@ namespace EpgTimer
             return TVTestCtrl.StartStreamingPlay(null, reserveID);
         }
 
-        public string FilePlay(string filePath, uint id, bool isReserve = false)
+        public string FilePlay(string filePath)
         {
             if (filePath.Length == 0)
             {
@@ -991,24 +1111,19 @@ namespace EpgTimer
                 {
                     return "ファイルパスが空です";
                 }
-                var cmdLine = new string[] { Settings.Instance.FilePlayExe, Settings.Instance.FilePlayCmd };
-                for (int i = 0; i < 2; i++)
-                {
-                    cmdLine[i] = Regex.Replace(cmdLine[i], "\\$" + (isReserve ? "RecInfo" : "Reserve") + "=[^$]*\\$", "");
-                    cmdLine[i] = Regex.Replace(cmdLine[i], "\\$" + (isReserve ? "Reserve" : "RecInfo") + "=([^$]*)\\$", m => m.Groups[1].Value.Replace("{}", id.ToString()));
-                }
                 try
                 {
-                    if (cmdLine[0].Length == 0)
+                    if (Settings.Instance.FilePlayExe.Length == 0)
                     {
                         using (Process.Start(new ProcessStartInfo(filePath) { UseShellExecute = true })) { }
                     }
                     else
                     {
+                        string cmdLine = Settings.Instance.FilePlayCmd;
                         //'$'->'\t'は再帰的な展開を防ぐため
-                        cmdLine[1] = cmdLine[1].Replace("$FileNameExt$", Path.GetFileName(filePath).Replace('$', '\t'));
-                        cmdLine[1] = cmdLine[1].Replace("$FilePath$", filePath).Replace('\t', '$');
-                        using (Process.Start(new ProcessStartInfo(cmdLine[0], cmdLine[1]) { UseShellExecute = true })) { }
+                        cmdLine = cmdLine.Replace("$FileNameExt$", Path.GetFileName(filePath).Replace('$', '\t'));
+                        cmdLine = cmdLine.Replace("$FilePath$", filePath).Replace('\t', '$');
+                        using (Process.Start(new ProcessStartInfo(Settings.Instance.FilePlayExe, cmdLine) { UseShellExecute = false })) { }
                     }
                 }
                 catch (Exception ex)

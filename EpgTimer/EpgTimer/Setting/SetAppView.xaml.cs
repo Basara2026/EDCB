@@ -26,18 +26,16 @@ namespace EpgTimer.Setting
         {
             InitializeComponent();
 
-            foreach (FontFamily family in Fonts.SystemFontFamilies)
+            foreach (string s in CommonManager.GetSortedFontNames())
             {
-                string s;
-                if (family.FamilyNames.TryGetValue(System.Windows.Markup.XmlLanguage.GetLanguage("ja-JP"), out s))
-                {
-                    comboBox_appFont.Items.Add(s);
-                }
-                else
-                {
-                    //ローカル名がなくても一応候補に加える
-                    comboBox_appFont.Items.Add(family.Source);
-                }
+                comboBox_appFont.Items.Add(s);
+                //画面ごとのフォントの候補にも加える
+                comboBox_fontReserveView.Items.Add(s);
+                comboBox_fontRecInfoView.Items.Add(s);
+                comboBox_fontAutoAddView.Items.Add(s);
+                comboBox_fontTunerReserveView.Items.Add(s);
+                comboBox_fontToolbar.Items.Add(s);
+                comboBox_fontEpgListView.Items.Add(s);
             }
 
             checkBox_wakeReconnect.IsEnabled = CommonManager.Instance.NWMode;
@@ -58,7 +56,7 @@ namespace EpgTimer.Setting
             listBox_service.ItemsSource = ChSet5.Instance.ChListSelected.Select(a => new ServiceViewItem(a));
 
             // バージョン文字列を表示
-            textBlock_versionText.Text = App.VERSION_TEXT != "" ? "Ver." + App.VERSION_TEXT : "";
+            textBlock_versionText.Text = App.VERSION_NUMBER != "" ? "EpgTimer-modified Version " + App.VERSION_NUMBER : "";
         }
 
         private void UserControl_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
@@ -247,7 +245,7 @@ namespace EpgTimer.Setting
         private void button_testAppFont_Click(object sender, RoutedEventArgs e)
         {
             var style = new Style(typeof(Window), (Style)FindResource("AppWindowStyle"));
-            style.Setters.Add(new Setter(FontFamilyProperty, new FontFamily(((Settings)DataContext).AppFontName)));
+            style.Setters.Add(new Setter(FontFamilyProperty, CommonManager.CreateFontFamily(((Settings)DataContext).AppFontName)));
             style.Setters.Add(new Setter(FontSizeProperty, ((Settings)DataContext).AppFontSize));
             var dlg = new SetDefRecSettingWindow();
             dlg.Style = style;

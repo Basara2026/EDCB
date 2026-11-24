@@ -39,11 +39,11 @@ namespace EpgTimer
         }
         public CommonManager.TimeDuration StartTime
         {
-            get { return new CommonManager.TimeDuration(true, ReserveInfo.StartTime, true, ReserveInfo.DurationSecond); }
+            get { return new CommonManager.TimeDuration(true, ReserveInfo.StartTime, true, ReserveInfo.DurationSecond, true); }
         }
         public CommonManager.TimeDuration StartTimeNoDuration
         {
-            get { return new CommonManager.TimeDuration(true, ReserveInfo.StartTime, true, double.NaN); }
+            get { return new CommonManager.TimeDuration(true, ReserveInfo.StartTime, true, double.NaN, true); }
         }
         public TimeSpan Duration
         {
@@ -103,6 +103,20 @@ namespace EpgTimer
             {
                 int i = ReserveInfo.RecSetting.BatFilePath.IndexOf('*');
                 return i < 0 ? "" : ReserveInfo.RecSetting.BatFilePath.Substring(i + 1);
+            }
+        }
+        public string RecEndMode
+        {
+            get
+            {
+                switch (ReserveInfo.RecSetting.SuspendMode)
+                {
+                    case 1: return "スタンバイ" + (ReserveInfo.RecSetting.RebootFlag == 1 ? " 復帰後再起動" : "");
+                    case 2: return "休止" + (ReserveInfo.RecSetting.RebootFlag == 1 ? " 復帰後再起動" : "");
+                    case 3: return "シャットダウン" + (ReserveInfo.RecSetting.RebootFlag == 1 ? " 復帰後再起動" : "");
+                    case 4: return "何もしない" + (ReserveInfo.RecSetting.RebootFlag == 1 ? " 復帰後再起動" : "");
+                    default: return "デフォルト";
+                }
             }
         }
         public uint ID
@@ -165,7 +179,7 @@ namespace EpgTimer
                        ReserveInfo.OverlapMode == 1 ? Settings.BrushCache.ResWarBrush : null;
             }
         }
-        public TextBlock ToolTipView
+        public ToolTip ToolTipView
         {
             get
             {
@@ -174,10 +188,29 @@ namespace EpgTimer
                     return null;
                 }
                 TextBlock block = new TextBlock();
-                block.Text = CommonManager.Instance.ConvertReserveText(ReserveInfo);
-                block.MaxWidth = 400;
+                //番組内容を表示する。番組情報が見つからない(プログラム予約など)ときは予約内容を表示する
+                EpgEventInfo eventInfo = null;
+                if (ReserveInfo.EventID != 0xFFFF)
+                {
+                    eventInfo = CommonManager.Instance.DB.GetPgInfo(ReserveInfo.OriginalNetworkID, ReserveInfo.TransportStreamID,
+                                                                    ReserveInfo.ServiceID, ReserveInfo.EventID, true);
+                }
+                if (eventInfo != null)
+                {
+                    block.Text = CommonManager.ConvertProgramText(eventInfo, EventInfoTextMode.BasicInfo) +
+                                 CommonManager.ConvertProgramText(eventInfo, EventInfoTextMode.BasicText) +
+                                 CommonManager.TrimHyphenSpace(CommonManager.ConvertProgramText(eventInfo, EventInfoTextMode.ExtendedText)) +
+                                 CommonManager.ConvertProgramText(eventInfo, EventInfoTextMode.PropertyInfo);
+                }
+                else
+                {
+                    block.Text = CommonManager.Instance.ConvertReserveText(ReserveInfo);
+                }
+                //番組内容に改行が多いときも幅が広がるよう、中身の幅を固定する
+                block.Width = 800;
                 block.TextWrapping = TextWrapping.Wrap;
-                return block;
+                //Fluentテーマ(ThemeMode)ではToolTip自体に最大幅の制限があるため、ToolTipを明示して制限を外す
+                return new ToolTip { Content = block, MaxWidth = double.PositiveInfinity };
             }
         }
 

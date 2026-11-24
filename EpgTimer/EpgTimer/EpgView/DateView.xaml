@@ -8,7 +8,10 @@
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Name="columnDefinition_prev_next" Width="{StaticResource AppEpgHeaderGridLength}" />
-            <ColumnDefinition Name="columnDefinition" Width="*" />
+            <ColumnDefinition Name="columnDefinition_leftSpace" Width="0" />
+            <ColumnDefinition Name="columnDefinition" Width="1000*" />
+            <ColumnDefinition Name="columnDefinition_rightSpace" Width="0" />
+            <ColumnDefinition Name="columnDefinition_rightFixed" Width="0" />
         </Grid.ColumnDefinitions>
         <UniformGrid Rows="2">
             <Button Content="←" IsEnabled="False" Name="button_prev" Style="{StaticResource AppEpgButtonStyle}" Visibility="Visible" Click="button_time_Click" ContextMenuOpening="button_time_ContextMenuOpening">
@@ -22,7 +25,7 @@
                 </Button.ContextMenu>
             </Button>
         </UniformGrid>
-        <UniformGrid Grid.Column="1" Rows="2">
+        <UniformGrid Grid.Column="2" Rows="2">
             <UniformGrid Name="uniformGrid_day" Rows="1" />
             <UniformGrid Name="uniformGrid_time" Rows="1" />
         </UniformGrid>

@@ -48,6 +48,13 @@ namespace EpgTimer
         {
             get { return ServiceInfo.service_name; }
         }
+        /// <summary>
+        /// 番組表の表示上のサービス名(設定で変更していれば変更後の名前)
+        /// </summary>
+        public string EpgServiceName
+        {
+            get { return Settings.Instance.GetServiceDisplayName(ServiceInfo.ONID, ServiceInfo.TSID, ServiceInfo.SID, ServiceInfo.service_name); }
+        }
         public string NetworkName
         {
             get { return CommonManager.ConvertNetworkNameText(ServiceInfo.ONID); }

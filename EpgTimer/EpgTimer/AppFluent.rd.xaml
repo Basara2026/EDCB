@@ -5,7 +5,6 @@
     <sys:Double x:Key="AppLargeFontSize">13</sys:Double>
 
     <sys:Double x:Key="AppAddPresetWindowWidth">450</sys:Double>
-    <sys:Double x:Key="AppColorSetWindowWidth">500</sys:Double>
     <sys:Double x:Key="AppConnectWindowWidth">440</sys:Double>
     <sys:Double x:Key="AppEpgDataViewSettingWindowHeight">700</sys:Double>
     <sys:Double x:Key="AppMainWindowHeight">480</sys:Double>
@@ -82,15 +81,15 @@
 
     <Thickness x:Key="AppListViewItemBorderThickness">5,0,0,0</Thickness>
 
-    <Brush x:Key="AppEpgDateSaturdayButtonForegroundBrush">RoyalBlue</Brush>
-    <Brush x:Key="AppEpgDateSundayButtonForegroundBrush">OrangeRed</Brush>
+    <Brush x:Key="AppEpgDateSaturdayButtonForegroundBrush">#389fff</Brush>
+    <Brush x:Key="AppEpgDateSundayButtonForegroundBrush">#ff3f1f</Brush>
     <Brush x:Key="AppEpgServiceHeaderBackgroundBrush">Silver</Brush>
     <Brush x:Key="AppEpgTimeHeaderBackgroundBrush">White</Brush>
     <Brush x:Key="AppEpgWeekDayHeaderBackgroundBrush">LightSlateGray</Brush>
 
-    <Color x:Key="AppEpgWeekDayHeaderTextBackgroundColor">Silver</Color>
-    <Color x:Key="AppEpgWeekDayHeaderSaturdayTextBackgroundColor">CornflowerBlue</Color>
-    <Color x:Key="AppEpgWeekDayHeaderSundayTextBackgroundColor">LightSalmon</Color>
+    <Color x:Key="AppEpgWeekDayHeaderTextBackgroundColor">#58C06B</Color>
+    <Color x:Key="AppEpgWeekDayHeaderSaturdayTextBackgroundColor">#4397F7</Color>
+    <Color x:Key="AppEpgWeekDayHeaderSundayTextBackgroundColor">#D34F3C</Color>
 
     <ControlTemplate x:Key="AppErrorMessagePopupTemplate">
         <Border Background="{DynamicResource {x:Static SystemColors.AccentColorBrushKey}}" CornerRadius="5">
@@ -99,10 +98,11 @@
     </ControlTemplate>
 
     <DataTemplate x:Key="AppColorNameItemTemplate">
-        <StackPanel Orientation="Horizontal">
-            <Label Background="{Binding Value}" Width="20" />
+        <!-- 背景を透明で塗っておき、文字や色見本のない部分でもクリックを受けられるようにする -->
+        <DockPanel Background="Transparent" LastChildFill="True">
+            <Label Background="{Binding Value}" DockPanel.Dock="Left" Width="20" />
             <TextBlock Margin="{StaticResource AppMarginL}" Text="{Binding Key}" />
-        </StackPanel>
+        </DockPanel>
     </DataTemplate>
 
     <DataTemplate x:Key="AppRecInfoListViewIsProtectHeaderTemplate">
@@ -191,6 +191,15 @@
 
     <Style x:Key="AppComboBoxStyle" BasedOn="{StaticResource {x:Type ComboBox}}" TargetType="ComboBox">
         <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="ItemContainerStyle">
+            <Setter.Value>
+                <Style BasedOn="{StaticResource {x:Type ComboBoxItem}}" TargetType="ComboBoxItem">
+                    <Setter Property="Background" Value="Transparent" />
+                    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                </Style>
+            </Setter.Value>
+        </Setter>
     </Style>
 
     <Style x:Key="AppLabelStyle" BasedOn="{StaticResource {x:Type Label}}" TargetType="Label">
@@ -273,10 +282,10 @@
         <Setter Property="VerticalAlignment" Value="Top" />
     </Style>
     <Style x:Key="AppEpgWeekDayHeaderSaturdayTextBlockStyle" BasedOn="{StaticResource AppEpgWeekDayHeaderTextBlockStyle}" TargetType="TextBlock">
-        <Setter Property="Foreground" Value="DarkBlue" />
+        <Setter Property="Foreground" Value="White" />
     </Style>
     <Style x:Key="AppEpgWeekDayHeaderSundayTextBlockStyle" BasedOn="{StaticResource AppEpgWeekDayHeaderTextBlockStyle}" TargetType="TextBlock">
-        <Setter Property="Foreground" Value="DarkRed" />
+        <Setter Property="Foreground" Value="White" />
     </Style>
     <Style x:Key="AppSearchResultListViewReservedTextBlockStyle" BasedOn="{StaticResource {x:Type TextBlock}}" TargetType="TextBlock">
         <Setter Property="FontWeight" Value="Bold" />

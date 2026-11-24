@@ -26,6 +26,7 @@ namespace EpgTimer
         public ChgReserveWindow()
         {
             InitializeComponent();
+            WindowPlacement.Apply(this, "ChgReserveWindow");
 
             comboBox_service.ItemsSource = ChSet5.Instance.ChListSelected;
             comboBox_service.SelectedIndex = 0;

@@ -21,6 +21,7 @@ namespace EpgTimer.Setting
         public SetDefRecSettingWindow()
         {
             InitializeComponent();
+            WindowPlacement.Apply(this, "SetDefRecSettingWindow");
         }
     }
 }

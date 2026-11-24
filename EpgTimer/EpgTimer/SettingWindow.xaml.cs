@@ -22,6 +22,7 @@ namespace EpgTimer
         public SettingWindow()
         {
             InitializeComponent();
+            WindowPlacement.Apply(this, "SettingWindow");
 
             button_srvSetting.IsEnabled = CommonManager.Instance.NWMode == false;
             DataContext = Settings.Instance.DeepCloneStaticSettings();
@@ -49,13 +50,37 @@ namespace EpgTimer
             }
         }
 
-        private void button_OK_Click(object sender, RoutedEventArgs e)
+        /// <summary>
+        /// 設定を適用してもウィンドウを閉じない「適用」ボタンが押されたときに発生する。
+        /// 呼び出し側は、OKで閉じたときと同じ設定の反映をここで行う
+        /// </summary>
+        public event EventHandler SettingApplied;
+
+        private void ApplySettings()
         {
             Settings.Instance.ShallowCopyDynamicSettingsTo((Settings)DataContext);
             Settings.Instance = (Settings)DataContext;
             Settings.SaveToXmlFile(true);
+        }
+
+        private void button_OK_Click(object sender, RoutedEventArgs e)
+        {
+            ApplySettings();
 
             this.DialogResult = true;
+        }
+
+        private void button_apply_Click(object sender, RoutedEventArgs e)
+        {
+            ApplySettings();
+            //適用した設定を持つオブジェクトは現在の設定そのものになったので、このあとの編集が直接反映されたり、
+            //キャンセルしても戻らなくなったりしないよう、現在の設定の新しいコピーに差し替える
+            DataContext = Settings.Instance.DeepCloneStaticSettings();
+            EventHandler handler = SettingApplied;
+            if (handler != null)
+            {
+                handler(this, EventArgs.Empty);
+            }
         }
 
         private void button_cancel_Click(object sender, RoutedEventArgs e)

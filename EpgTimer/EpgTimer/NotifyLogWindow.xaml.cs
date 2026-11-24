@@ -29,6 +29,7 @@ namespace EpgTimer
         public NotifyLogWindow()
         {
             InitializeComponent();
+            WindowPlacement.Apply(this, "NotifyLogWindow");
             textBox_logMax.Text = Settings.Instance.NotifyLogMax.ToString();
         }
 

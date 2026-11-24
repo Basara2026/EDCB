@@ -328,6 +328,35 @@ namespace EpgTimer
             }
         }
 
+        private void copyProgram_Click(object sender, RoutedEventArgs e)
+        {
+            //選択中の予約の番組内容をコピーする(複数選択時は空行区切りで連結)
+            var texts = new List<string>();
+            foreach (ReserveItem item in listView_reserve.SelectedItems)
+            {
+                ReserveData info = item.ReserveInfo;
+                if (info.EventID != 0xFFFF)
+                {
+                    EpgEventInfo eventInfo = CommonManager.Instance.DB.GetPgInfo(info.OriginalNetworkID, info.TransportStreamID,
+                                                                                 info.ServiceID, info.EventID, false);
+                    if (eventInfo != null)
+                    {
+                        texts.Add(CommonManager.ConvertProgramCopyText(eventInfo));
+                    }
+                }
+            }
+            if (texts.Count > 0)
+            {
+                CommonManager.CopyTextToClipboard(string.Join("\r\n\r\n", texts));
+            }
+            else if (listView_reserve.SelectedItem != null)
+            {
+                popup_error.DataContext = "番組情報が見つかりません";
+                popup_error.PlacementTarget = listView_reserve.ItemContainerGenerator.ContainerFromItem(listView_reserve.SelectedItem) as UIElement ?? listView_reserve;
+                popup_error.IsOpen = true;
+            }
+        }
+
         private void button_del_Click(object sender, RoutedEventArgs e)
         {
             try

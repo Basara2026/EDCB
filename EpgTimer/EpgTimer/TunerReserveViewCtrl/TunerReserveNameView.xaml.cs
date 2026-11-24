@@ -34,10 +34,17 @@ namespace EpgTimer.TunerReserveViewCtrl
             ClearInfo();
             foreach (TunerNameViewItem info in tunerInfo)
             {
+                //BonDriver名だけを1行で表示する(IDは表示しない)。収まらないときは省略表示し、全体はツールチップで見られる
+                string tunerName = info.TunerInfo.tunerName.Replace("\r\n", " ").Replace('\r', ' ').Replace('\n', ' ');
                 var item = new TextBlock()
                 {
                     Style = (Style)FindResource(isLight ? "AppEpgServiceHeaderLightBackgroundTextBlockStyle" : "AppEpgServiceHeaderTextBlockStyle"),
-                    Text = info.TunerInfo.tunerName + (info.TunerInfo.tunerID != 0xFFFFFFFF ? "\r\nID: " + info.TunerInfo.tunerID.ToString("X8") : "")
+                    Text = tunerName,
+                    TextTrimming = TextTrimming.CharacterEllipsis,
+                    TextWrapping = TextWrapping.NoWrap,
+                    ToolTip = tunerName,
+                    //スタイルは上寄せだが、枠の縦方向の中央に表示する
+                    VerticalAlignment = VerticalAlignment.Center
                 };
                 var grid = new Grid()
                 {
@@ -48,6 +55,8 @@ namespace EpgTimer.TunerReserveViewCtrl
                 grid.Children.Add(item);
                 stackPanel_tuner.Children.Add(grid);
             }
+            //フォントによる上下のずれを補正する
+            EpgTimer.EpgView.EpgHeaderFormat.CenterTextBlocks(stackPanel_tuner);
         }
     }
 }

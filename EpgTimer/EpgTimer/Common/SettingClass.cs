@@ -134,6 +134,50 @@ namespace EpgTimer
         public string FontNameTitle { get; set; }
         public double FontSizeTitle { get; set; }
         public bool FontBoldTitle { get; set; }
+        public int FontWeightTitle { get; set; }
+        public int FontWeightNormal { get; set; }
+        public string FontNameHeader { get; set; }
+        public double FontSizeHeader { get; set; }
+        public int FontWeightHeader { get; set; }
+        public double HeaderHeight { get; set; }
+        public string FontNameHeaderWeek { get; set; }
+        public double FontSizeHeaderWeek { get; set; }
+        public int FontWeightHeaderWeek { get; set; }
+        public double HeaderHeightWeek { get; set; }
+        public string FontNameTimeHeader { get; set; }
+        public double FontSizeTimeHeader { get; set; }
+        public int FontWeightTimeHeader { get; set; }
+        public int TimeHeaderPlace { get; set; }
+        public double TimeHeaderWidth { get; set; }
+        public bool TimeColorGGuide { get; set; }
+        public bool EpgDarkMode { get; set; }
+        public bool ServiceColorCycle { get; set; }
+        public bool TitleBlurColorEnabled { get; set; }
+        public string TitleBlurColor { get; set; }
+        public uint TitleBlurCustColor { get; set; }
+        public bool BodyBlurColorEnabled { get; set; }
+        public string BodyBlurColor { get; set; }
+        public uint BodyBlurCustColor { get; set; }
+        public bool ServiceBlurColorEnabled { get; set; }
+        public string ServiceBlurColor { get; set; }
+        public uint ServiceBlurCustColor { get; set; }
+        public bool WeekDayBlurColorEnabled { get; set; }
+        public string WeekDayBlurColor { get; set; }
+        public uint WeekDayBlurCustColor { get; set; }
+        public bool TimeBlurColorEnabled { get; set; }
+        public string TimeBlurColor { get; set; }
+        public uint TimeBlurCustColor { get; set; }
+        public double TimeBlurRadius { get; set; }
+        public double ServiceBlurRadius { get; set; }
+        public double TitleBlurRadius { get; set; }
+        public double BodyBlurRadius { get; set; }
+        public string ServiceTextColor { get; set; }
+        public uint ServiceTextCustColor { get; set; }
+        public string WeekDayTextColor { get; set; }
+        public uint WeekDayTextCustColor { get; set; }
+        public string TimeTextColor { get; set; }
+        public uint TimeTextCustColor { get; set; }
+        public double WeekDayBlurRadius { get; set; }
         public double DragScroll { get; set; }
         public List<string> ContentColorList { get; set; }
         public List<uint> ContentCustColorList { get; set; }
@@ -163,9 +207,13 @@ namespace EpgTimer
         public bool EpgPopup { get; set; }
         public bool EpgAdjustPopup { get; set; }
         public bool EpgExtInfoTable { get; set; }
+        public bool EpgSymbolImage { get; set; }
         public bool EpgExtInfoPopup { get; set; }
+        public int EpgPopupWidth { get; set; }
         public bool EpgGradation { get; set; }
         public bool EpgGradationHeader { get; set; }
+        public bool EpgServiceDetail { get; set; }
+        public double ServiceLogoHeight { get; set; }
         public byte EpgTipsBackColorR { get; set; }
         public byte EpgTipsBackColorG { get; set; }
         public byte EpgTipsBackColorB { get; set; }
@@ -224,6 +272,8 @@ namespace EpgTimer
         public bool ViewButtonShowAsTab { get; set; }
         public List<string> ViewButtonList { get; set; }
         public List<string> TaskMenuList { get; set; }
+        public List<string> ServiceNameAliasList { get; set; }
+        public List<double> ServiceAliasColumnWidth { get; set; }
         public string Cust1BtnName { get; set; }
         public string Cust1BtnCmd { get; set; }
         public string Cust1BtnCmdOpt { get; set; }
@@ -313,12 +363,33 @@ namespace EpgTimer
         public bool SetAppFont { get; set; }
         public string AppFontName { get; set; }
         public double AppFontSize { get; set; }
+        public string ReserveViewFontName { get; set; }
+        public double ReserveViewFontSize { get; set; }
+        public int ReserveViewFontWeight { get; set; }
+        public string RecInfoViewFontName { get; set; }
+        public double RecInfoViewFontSize { get; set; }
+        public int RecInfoViewFontWeight { get; set; }
+        public string AutoAddViewFontName { get; set; }
+        public double AutoAddViewFontSize { get; set; }
+        public int AutoAddViewFontWeight { get; set; }
+        public string TunerReserveViewFontName { get; set; }
+        public double TunerReserveViewFontSize { get; set; }
+        public int TunerReserveViewFontWeight { get; set; }
+        public string ToolbarFontName { get; set; }
+        public double ToolbarFontSize { get; set; }
+        public int ToolbarFontWeight { get; set; }
+        public string EpgListViewFontName { get; set; }
+        public double EpgListViewFontSize { get; set; }
+        public int EpgListViewFontWeight { get; set; }
+        public double EpgListServiceWidth { get; set; }
+        public double EpgListEventHeight { get; set; }
         public uint ExecBat { get; set; }
         public uint SuspendChk { get; set; }
         public List<ListColumnInfo> ReserveListColumn { get; set; }
         public List<ListColumnInfo> RecInfoListColumn { get; set; }
         public List<ListColumnInfo> AutoAddEpgColumn { get; set; }
         public List<ListColumnInfo> AutoAddManualColumn { get; set; }
+        public List<WndPlacementInfo> WndPlacementList { get; set; }
         public double SearchWndWidth { get; set; }
         public double SearchWndHeight { get; set; }
         public int NotifyLogMax { get; set; }
@@ -367,6 +438,51 @@ namespace EpgTimer
                 rr.FontNameTitle            = ConvertXElem(xx, w, "FontNameTitle", val.FontNameTitle, "メイリオ");
                 rr.FontSizeTitle            = ConvertXElem(xx, w, "FontSizeTitle", val.FontSizeTitle, 12);
                 rr.FontBoldTitle            = ConvertXElem(xx, w, "FontBoldTitle", val.FontBoldTitle, true);
+                //フォントの太さ(1〜999、400が標準、700が太字)。以前の「太字」の設定があれば、それを引き継ぐ
+                rr.FontWeightTitle          = (int)ConvertXElem(xx, w, "FontWeightTitle", val.FontWeightTitle, rr.FontBoldTitle ? 700 : 400);
+                rr.FontWeightNormal         = (int)ConvertXElem(xx, w, "FontWeightNormal", val.FontWeightNormal, 400);
+                rr.FontNameHeader           = ConvertXElem(xx, w, "FontNameHeader", val.FontNameHeader, "");
+                rr.FontSizeHeader           = ConvertXElem(xx, w, "FontSizeHeader", val.FontSizeHeader, 0);
+                rr.FontWeightHeader = (int)ConvertXElem(xx, w, "FontWeightHeader", val.FontWeightHeader, 400);
+                rr.HeaderHeight             = ConvertXElem(xx, w, "HeaderHeight", val.HeaderHeight, 0);
+                rr.FontNameHeaderWeek       = ConvertXElem(xx, w, "FontNameHeaderWeek", val.FontNameHeaderWeek, "");
+                rr.FontSizeHeaderWeek       = ConvertXElem(xx, w, "FontSizeHeaderWeek", val.FontSizeHeaderWeek, 0);
+                rr.FontWeightHeaderWeek = (int)ConvertXElem(xx, w, "FontWeightHeaderWeek", val.FontWeightHeaderWeek, 700);
+                rr.HeaderHeightWeek         = ConvertXElem(xx, w, "HeaderHeightWeek", val.HeaderHeightWeek, 0);
+                rr.FontNameTimeHeader       = ConvertXElem(xx, w, "FontNameTimeHeader", val.FontNameTimeHeader, "");
+                rr.FontSizeTimeHeader       = ConvertXElem(xx, w, "FontSizeTimeHeader", val.FontSizeTimeHeader, 0);
+                rr.FontWeightTimeHeader = (int)ConvertXElem(xx, w, "FontWeightTimeHeader", val.FontWeightTimeHeader, 400);
+                rr.TimeHeaderPlace          = (int)ConvertXElem(xx, w, "TimeHeaderPlace", val.TimeHeaderPlace, 1);
+                rr.TimeHeaderWidth          = ConvertXElem(xx, w, "TimeHeaderWidth", val.TimeHeaderWidth, 0);
+                rr.TimeColorGGuide          = ConvertXElem(xx, w, "TimeColorGGuide", val.TimeColorGGuide, true);
+                rr.EpgDarkMode              = ConvertXElem(xx, w, "EpgDarkMode", val.EpgDarkMode, false);
+                rr.ServiceColorCycle        = ConvertXElem(xx, w, "ServiceColorCycle", val.ServiceColorCycle, false);
+                rr.TitleBlurColorEnabled = ConvertXElem(xx, w, "TitleBlurColorEnabled", val.TitleBlurColorEnabled, false);
+                rr.TitleBlurColor = ConvertXElem(xx, w, "TitleBlurColor", val.TitleBlurColor, "Black");
+                rr.TitleBlurCustColor = (uint)ConvertXElem(xx, w, "TitleBlurCustColor", val.TitleBlurCustColor, 0xFFFFFFFF);
+                rr.BodyBlurColorEnabled = ConvertXElem(xx, w, "BodyBlurColorEnabled", val.BodyBlurColorEnabled, false);
+                rr.BodyBlurColor = ConvertXElem(xx, w, "BodyBlurColor", val.BodyBlurColor, "Black");
+                rr.BodyBlurCustColor = (uint)ConvertXElem(xx, w, "BodyBlurCustColor", val.BodyBlurCustColor, 0xFFFFFFFF);
+                rr.ServiceBlurColorEnabled = ConvertXElem(xx, w, "ServiceBlurColorEnabled", val.ServiceBlurColorEnabled, false);
+                rr.ServiceBlurColor = ConvertXElem(xx, w, "ServiceBlurColor", val.ServiceBlurColor, "Black");
+                rr.ServiceBlurCustColor = (uint)ConvertXElem(xx, w, "ServiceBlurCustColor", val.ServiceBlurCustColor, 0xFFFFFFFF);
+                rr.WeekDayBlurColorEnabled = ConvertXElem(xx, w, "WeekDayBlurColorEnabled", val.WeekDayBlurColorEnabled, false);
+                rr.WeekDayBlurColor = ConvertXElem(xx, w, "WeekDayBlurColor", val.WeekDayBlurColor, "Black");
+                rr.WeekDayBlurCustColor = (uint)ConvertXElem(xx, w, "WeekDayBlurCustColor", val.WeekDayBlurCustColor, 0xFFFFFFFF);
+                rr.TimeBlurColorEnabled = ConvertXElem(xx, w, "TimeBlurColorEnabled", val.TimeBlurColorEnabled, false);
+                rr.TimeBlurColor = ConvertXElem(xx, w, "TimeBlurColor", val.TimeBlurColor, "Black");
+                rr.TimeBlurCustColor = (uint)ConvertXElem(xx, w, "TimeBlurCustColor", val.TimeBlurCustColor, 0xFFFFFFFF);
+                rr.TimeBlurRadius           = ConvertXElem(xx, w, "TimeBlurRadius", val.TimeBlurRadius, 5);
+                rr.ServiceBlurRadius        = ConvertXElem(xx, w, "ServiceBlurRadius", val.ServiceBlurRadius, 5);
+                rr.TitleBlurRadius          = ConvertXElem(xx, w, "TitleBlurRadius", val.TitleBlurRadius, 5);
+                rr.BodyBlurRadius           = ConvertXElem(xx, w, "BodyBlurRadius", val.BodyBlurRadius, 5);
+                rr.ServiceTextColor = ConvertXElem(xx, w, "ServiceTextColor", val.ServiceTextColor, "White");
+                rr.ServiceTextCustColor = (uint)ConvertXElem(xx, w, "ServiceTextCustColor", val.ServiceTextCustColor, 0xFFFFFFFF);
+                rr.WeekDayTextColor = ConvertXElem(xx, w, "WeekDayTextColor", val.WeekDayTextColor, "White");
+                rr.WeekDayTextCustColor = (uint)ConvertXElem(xx, w, "WeekDayTextCustColor", val.WeekDayTextCustColor, 0xFFFFFFFF);
+                rr.TimeTextColor = ConvertXElem(xx, w, "TimeTextColor", val.TimeTextColor, "White");
+                rr.TimeTextCustColor = (uint)ConvertXElem(xx, w, "TimeTextCustColor", val.TimeTextCustColor, 0xFFFFFFFF);
+                rr.WeekDayBlurRadius = ConvertXElem(xx, w, "WeekDayBlurRadius", val.WeekDayBlurRadius, 5);
                 rr.DragScroll               = ConvertXElem(xx, w, "DragScroll", val.DragScroll, 1.5);
                 rr.ContentColorList         = ConvertXElements(xx, w, "ContentColorList", val.ContentColorList).ToList();
                 rr.ContentCustColorList     = ConvertXElements(xx, w, "ContentCustColorList",
@@ -385,7 +501,7 @@ namespace EpgTimer
                 rr.TitleColor2              = ConvertXElem(xx, w, "TitleColor2", val.TitleColor2, "Black");
                 rr.TitleCustColor1          = (uint)ConvertXElem(xx, w, "TitleCustColor1", val.TitleCustColor1, 0xFFFFFFFF);
                 rr.TitleCustColor2          = (uint)ConvertXElem(xx, w, "TitleCustColor2", val.TitleCustColor2, 0xFFFFFFFF);
-                rr.ServiceColor             = ConvertXElem(xx, w, "ServiceColor", val.ServiceColor, "LightSlateGray");
+                rr.ServiceColor             = ConvertXElem(xx, w, "ServiceColor", val.ServiceColor, "Black");
                 rr.ServiceCustColor         = (uint)ConvertXElem(xx, w, "ServiceCustColor", val.ServiceCustColor, 0xFFFFFFFF);
                 rr.EpgToolTip               = ConvertXElem(xx, w, "EpgToolTip", val.EpgToolTip, false);
                 rr.EpgBorderLeftSize        = ConvertXElem(xx, w, "EpgBorderLeftSize", val.EpgBorderLeftSize, 2);
@@ -398,9 +514,13 @@ namespace EpgTimer
                 rr.EpgPopup                 = ConvertXElem(xx, w, "EpgPopup", val.EpgPopup, true);
                 rr.EpgAdjustPopup           = ConvertXElem(xx, w, "EpgAdjustPopup", val.EpgAdjustPopup, true);
                 rr.EpgExtInfoTable          = ConvertXElem(xx, w, "EpgExtInfoTable", val.EpgExtInfoTable, false);
+                rr.EpgSymbolImage           = ConvertXElem(xx, w, "EpgSymbolImage", val.EpgSymbolImage, true);
                 rr.EpgExtInfoPopup          = ConvertXElem(xx, w, "EpgExtInfoPopup", val.EpgExtInfoPopup, true);
+                rr.EpgPopupWidth            = (int)ConvertXElem(xx, w, "EpgPopupWidth", val.EpgPopupWidth, 0);
                 rr.EpgGradation             = ConvertXElem(xx, w, "EpgGradation", val.EpgGradation, true);
                 rr.EpgGradationHeader       = ConvertXElem(xx, w, "EpgGradationHeader", val.EpgGradationHeader, true);
+                rr.EpgServiceDetail         = ConvertXElem(xx, w, "EpgServiceDetail", val.EpgServiceDetail, true);
+                rr.ServiceLogoHeight        = ConvertXElem(xx, w, "ServiceLogoHeight", val.ServiceLogoHeight, 0);
                 rr.EpgTipsBackColorR        = (byte)ConvertXElem(xx, w, "EpgTipsBackColorR", val.EpgTipsBackColorR, 0xD3);
                 rr.EpgTipsBackColorG        = (byte)ConvertXElem(xx, w, "EpgTipsBackColorG", val.EpgTipsBackColorG, 0xD3);
                 rr.EpgTipsBackColorB        = (byte)ConvertXElem(xx, w, "EpgTipsBackColorB", val.EpgTipsBackColorB, 0xD3);
@@ -408,9 +528,9 @@ namespace EpgTimer
                 rr.EpgTipsForeColorG        = (byte)ConvertXElem(xx, w, "EpgTipsForeColorG", val.EpgTipsForeColorG, 0);
                 rr.EpgTipsForeColorB        = (byte)ConvertXElem(xx, w, "EpgTipsForeColorB", val.EpgTipsForeColorB, 0);
                 rr.EpgBackColorA            = (byte)ConvertXElem(xx, w, "EpgBackColorA", val.EpgBackColorA, 0x80);
-                rr.EpgBackColorR            = (byte)ConvertXElem(xx, w, "EpgBackColorR", val.EpgBackColorR, 0xA9);
-                rr.EpgBackColorG            = (byte)ConvertXElem(xx, w, "EpgBackColorG", val.EpgBackColorG, 0xA9);
-                rr.EpgBackColorB            = (byte)ConvertXElem(xx, w, "EpgBackColorB", val.EpgBackColorB, 0xA9);
+                rr.EpgBackColorR            = (byte)ConvertXElem(xx, w, "EpgBackColorR", val.EpgBackColorR, 0x32);
+                rr.EpgBackColorG            = (byte)ConvertXElem(xx, w, "EpgBackColorG", val.EpgBackColorG, 0x32);
+                rr.EpgBackColorB            = (byte)ConvertXElem(xx, w, "EpgBackColorB", val.EpgBackColorB, 0x32);
                 rr.EpgInfoSingleClick       = ConvertXElem(xx, w, "EpgInfoSingleClick", val.EpgInfoSingleClick, false);
                 rr.EpgInfoOpenMode          = (byte)ConvertXElem(xx, w, "EpgInfoOpenMode", val.EpgInfoOpenMode, 0);
                 if (i != 0 && w)
@@ -452,6 +572,8 @@ namespace EpgTimer
             r.ViewButtonShowAsTab       = ConvertXElem(x, w, "ViewButtonShowAsTab", ViewButtonShowAsTab, false);
             r.ViewButtonList            = ConvertXElements(x, w, "ViewButtonList", ViewButtonList).ToList();
             r.TaskMenuList              = ConvertXElements(x, w, "TaskMenuList", TaskMenuList).ToList();
+            r.ServiceNameAliasList      = ConvertXElements(x, w, "ServiceNameAliasList", ServiceNameAliasList).ToList();
+            r.ServiceAliasColumnWidth   = ConvertXElements(x, w, "ServiceAliasColumnWidth", ServiceAliasColumnWidth, "double").ToList();
             r.Cust1BtnName              = ConvertXElem(x, w, "Cust1BtnName", Cust1BtnName, "");
             r.Cust1BtnCmd               = ConvertXElem(x, w, "Cust1BtnCmd", Cust1BtnCmd, "");
             r.Cust1BtnCmdOpt            = ConvertXElem(x, w, "Cust1BtnCmdOpt", Cust1BtnCmdOpt, "");
@@ -543,12 +665,33 @@ namespace EpgTimer
             r.SetAppFont                = ConvertXElem(x, w, "SetAppFont", SetAppFont, false);
             r.AppFontName               = ConvertXElem(x, w, "AppFontName", AppFontName, "メイリオ");
             r.AppFontSize               = ConvertXElem(x, w, "AppFontSize", AppFontSize, 12);
+            r.ReserveViewFontName = ConvertXElem(x, w, "ReserveViewFontName", ReserveViewFontName, "");
+            r.ReserveViewFontSize = ConvertXElem(x, w, "ReserveViewFontSize", ReserveViewFontSize, 0);
+            r.ReserveViewFontWeight = (int)ConvertXElem(x, w, "ReserveViewFontWeight", ReserveViewFontWeight, 400);
+            r.RecInfoViewFontName = ConvertXElem(x, w, "RecInfoViewFontName", RecInfoViewFontName, "");
+            r.RecInfoViewFontSize = ConvertXElem(x, w, "RecInfoViewFontSize", RecInfoViewFontSize, 0);
+            r.RecInfoViewFontWeight = (int)ConvertXElem(x, w, "RecInfoViewFontWeight", RecInfoViewFontWeight, 400);
+            r.AutoAddViewFontName = ConvertXElem(x, w, "AutoAddViewFontName", AutoAddViewFontName, "");
+            r.AutoAddViewFontSize = ConvertXElem(x, w, "AutoAddViewFontSize", AutoAddViewFontSize, 0);
+            r.AutoAddViewFontWeight = (int)ConvertXElem(x, w, "AutoAddViewFontWeight", AutoAddViewFontWeight, 400);
+            r.TunerReserveViewFontName = ConvertXElem(x, w, "TunerReserveViewFontName", TunerReserveViewFontName, "");
+            r.TunerReserveViewFontSize = ConvertXElem(x, w, "TunerReserveViewFontSize", TunerReserveViewFontSize, 0);
+            r.TunerReserveViewFontWeight = (int)ConvertXElem(x, w, "TunerReserveViewFontWeight", TunerReserveViewFontWeight, 400);
+            r.ToolbarFontName = ConvertXElem(x, w, "ToolbarFontName", ToolbarFontName, "");
+            r.ToolbarFontSize = ConvertXElem(x, w, "ToolbarFontSize", ToolbarFontSize, 0);
+            r.ToolbarFontWeight = (int)ConvertXElem(x, w, "ToolbarFontWeight", ToolbarFontWeight, 400);
+            r.EpgListViewFontName = ConvertXElem(x, w, "EpgListViewFontName", EpgListViewFontName, "");
+            r.EpgListViewFontSize = ConvertXElem(x, w, "EpgListViewFontSize", EpgListViewFontSize, 0);
+            r.EpgListViewFontWeight = (int)ConvertXElem(x, w, "EpgListViewFontWeight", EpgListViewFontWeight, 400);
+            r.EpgListServiceWidth = ConvertXElem(x, w, "EpgListServiceWidth", EpgListServiceWidth, 0);
+            r.EpgListEventHeight = ConvertXElem(x, w, "EpgListEventHeight", EpgListEventHeight, 0);
             r.ExecBat                   = (uint)ConvertXElem(x, w, "ExecBat", ExecBat, 0);
             r.SuspendChk                = (uint)ConvertXElem(x, w, "SuspendChk", SuspendChk, 0);
             r.ReserveListColumn         = ConvertXElements(x, w, "ReserveListColumn", ReserveListColumn).ToList();
             r.RecInfoListColumn         = ConvertXElements(x, w, "RecInfoListColumn", RecInfoListColumn).ToList();
             r.AutoAddEpgColumn          = ConvertXElements(x, w, "AutoAddEpgColumn", AutoAddEpgColumn).ToList();
             r.AutoAddManualColumn       = ConvertXElements(x, w, "AutoAddManualColumn", AutoAddManualColumn).ToList();
+            r.WndPlacementList          = ConvertXElements(x, w, "WndPlacementList", WndPlacementList).ToList();
             r.SearchWndWidth            = ConvertXElem(x, w, "SearchWndWidth", SearchWndWidth, 0);
             r.SearchWndHeight           = ConvertXElem(x, w, "SearchWndHeight", SearchWndHeight, 0);
             r.NotifyLogMax              = (int)ConvertXElem(x, w, "NotifyLogMax", NotifyLogMax, 100);
@@ -561,6 +704,50 @@ namespace EpgTimer
             r.StartTab                  = ConvertXElem(x, w, "StartTab", StartTab, "ReserveView");
         }
 
+        private Dictionary<ulong, string> serviceAliasMap;
+
+        /// <summary>
+        /// 番組表の表示上だけで使うサービス名を返す。変更(編集)していなければ元のサービス名をそのまま返す。
+        /// ServiceNameAliasListの各項目は「ONID,TSID,SIDをまとめた64bitキー(10進数)|表示名」の形式
+        /// </summary>
+        public string GetServiceDisplayName(ushort onid, ushort tsid, ushort sid, string originalName)
+        {
+            if (ServiceNameAliasList == null || ServiceNameAliasList.Count == 0)
+            {
+                return originalName;
+            }
+            if (serviceAliasMap == null)
+            {
+                var map = new Dictionary<ulong, string>();
+                foreach (string entry in ServiceNameAliasList)
+                {
+                    int i = entry.IndexOf('|');
+                    ulong key;
+                    if (i > 0 && ulong.TryParse(entry.Substring(0, i), out key) && i + 1 < entry.Length)
+                    {
+                        map[key] = entry.Substring(i + 1);
+                    }
+                }
+                serviceAliasMap = map;
+            }
+            string alias;
+            return serviceAliasMap.TryGetValue(CommonManager.Create64Key(onid, tsid, sid), out alias) ? alias : originalName;
+        }
+
+        /// <summary>
+        /// 番組表の表示上のサービス名を設定する。空欄のときは変更を解除して元のサービス名に戻す
+        /// </summary>
+        public void SetServiceDisplayName(ulong key, string name)
+        {
+            string prefix = key.ToString() + "|";
+            ServiceNameAliasList.RemoveAll(a => a.StartsWith(prefix, StringComparison.Ordinal));
+            if (string.IsNullOrWhiteSpace(name) == false)
+            {
+                ServiceNameAliasList.Add(prefix + name.Trim());
+            }
+            serviceAliasMap = null;
+        }
+
         public Settings DeepCloneStaticSettings()
         {
             var other = (Settings)MemberwiseClone();
@@ -568,6 +755,8 @@ namespace EpgTimer
             other.EpgSettingList = EpgSettingList.Select(a => a.DeepClone()).ToList();
             other.ViewButtonList = ViewButtonList.ToList();
             other.TaskMenuList = TaskMenuList.ToList();
+            other.ServiceNameAliasList = ServiceNameAliasList.ToList();
+            other.serviceAliasMap = null;
             other.SearchKeyContentList = SearchKeyContentList.Select(a => a.DeepClone()).ToList();
             other.SearchKeyDateItemList = SearchKeyDateItemList.Select(a => a.DeepClone()).ToList();
             other.SearchKeyServiceList = SearchKeyServiceList.ToList();
@@ -607,9 +796,11 @@ namespace EpgTimer
             dest.RecInfoListColumn = RecInfoListColumn;
             dest.AutoAddEpgColumn = AutoAddEpgColumn;
             dest.AutoAddManualColumn = AutoAddManualColumn;
+            dest.WndPlacementList = WndPlacementList;
             dest.SearchWndWidth = SearchWndWidth;
             dest.SearchWndHeight = SearchWndHeight;
             dest.NotifyLogMax = NotifyLogMax;
+            dest.ServiceAliasColumnWidth = ServiceAliasColumnWidth;
         }
 
         private static Settings _instance;
@@ -979,23 +1170,23 @@ namespace EpgTimer
             {
                 //番組表の背景色
                 epgSetting.ContentColorList.AddRange((new string[] {
-                    "LightYellow",
-                    "Lavender",
-                    "LavenderBlush",
-                    "MistyRose",
-                    "Honeydew",
-                    "LightCyan",
-                    "PapayaWhip",
-                    "Pink",
-                    "LightYellow",
-                    "PapayaWhip",
-                    "AliceBlue",
-                    "AliceBlue",
-                    "White",
-                    "White",
-                    "White",
-                    "WhiteSmoke",
-                    "White" }).Skip(Math.Min(epgSetting.ContentColorList.Count, 17)));
+                    "RoyalBlue",  // ニュース／報道
+                    "DarkGreen",  // スポーツ
+                    "CornflowerBlue",  // 情報／ワイドショー
+                    "Chocolate",  // ドラマ
+                    "MediumPurple",  // 音楽
+                    "SteelBlue",  // バラエティ
+                    "Teal",  // 映画
+                    "Salmon",  // アニメ／特撮
+                    "SeaGreen",  // ドキュメンタリー／教養
+                    "ForestGreen",  // 劇場／公演
+                    "Coral",  // 趣味／教育
+                    "DarkCyan",  // 福祉
+                    "White",  // (未使用)
+                    "White",  // (未使用)
+                    "White",  // (未使用)
+                    "PaleVioletRed",  // その他
+                    "Sienna" }).Skip(Math.Min(epgSetting.ContentColorList.Count, 17)));  // なし
                 //番組表の背景カスタム色(+4は番組表の予約枠色)
                 epgSetting.ContentCustColorList.AddRange(Enumerable.Repeat(0xFFFFFFFF, Math.Max(17 + 4 - epgSetting.ContentCustColorList.Count, 0)));
 
@@ -1189,6 +1380,20 @@ namespace EpgTimer
                 val = val ?? r;
                 r.Tag = ConvertXElem(xx, w, "Tag", val.Tag, "");
                 r.Width = ConvertXElem(xx, w, "Width", val.Width, 0);
+                return r;
+            });
+        }
+
+        private static IEnumerable<WndPlacementInfo> ConvertXElements(XElement x, bool w, string key, IEnumerable<WndPlacementInfo> list)
+        {
+            return ConvertXElements(x, w, key, list, "WndPlacementInfo", (xx, val) => {
+                var r = new WndPlacementInfo();
+                val = val ?? r;
+                r.Tag = ConvertXElem(xx, w, "Tag", val.Tag, "");
+                r.Left = ConvertXElem(xx, w, "Left", val.Left, double.NaN);
+                r.Top = ConvertXElem(xx, w, "Top", val.Top, double.NaN);
+                r.Width = ConvertXElem(xx, w, "Width", val.Width, 0);
+                r.Height = ConvertXElem(xx, w, "Height", val.Height, 0);
                 return r;
             });
         }

@@ -21,6 +21,7 @@ namespace EpgTimer
         public EpgDataViewSettingWindow()
         {
             InitializeComponent();
+            WindowPlacement.Apply(this, "EpgDataViewSettingWindow");
         }
 
         /// <summary>

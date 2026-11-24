@@ -8,8 +8,23 @@
             <RowDefinition Height="auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
+        <!-- 「ボタンレイアウト変更」のときに使うプルダウンメニューの行 -->
+        <Grid Name="grid_toolbar" Visibility="Collapsed">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <ComboBox Margin="{StaticResource AppMarginL}" Name="comboBox_main" Style="{StaticResource AppComboBoxStyle}" ToolTip="表示の切り替え" SelectionChanged="comboBox_main_SelectionChanged" />
+            <ComboBox Grid.Column="1" Margin="{StaticResource AppMarginL}" Name="comboBox_epgTab" Style="{StaticResource AppComboBoxStyle}" ToolTip="番組表の切り替え" SelectionChanged="comboBox_epgTab_SelectionChanged" />
+            <ComboBox Grid.Column="1" Margin="{StaticResource AppMarginL}" Name="comboBox_autoAddTab" Style="{StaticResource AppComboBoxStyle}" ToolTip="自動予約登録の切り替え" Visibility="Collapsed" SelectionChanged="comboBox_autoAddTab_SelectionChanged" />
+            <ContentControl Grid.Column="2" Margin="{StaticResource AppMarginL}" Name="contentControl_date" VerticalAlignment="Center" />
+            <Button Grid.Column="4" Content="≡" MinWidth="40" Name="button_more" Style="{StaticResource AppMainWindowButtonStyle}" ToolTip="メニュー" Click="moreButton_Click" />
+        </Grid>
         <StackPanel Name="stackPanel_button" Orientation="Horizontal">
-            <Button Content="設定" Style="{StaticResource AppMainWindowButtonStyle}" Visibility="Collapsed" Click="settingButton_Click" />
+            <Button Content="設定" Style="{StaticResource AppMainWindowButtonStyle}" Tag="設定" Visibility="Collapsed" Click="settingButton_Click" />
             <Button Content="検索" Style="{StaticResource AppMainWindowButtonStyle}" Visibility="Collapsed" Click="searchButton_Click" />
             <Button Content="終了" Style="{StaticResource AppMainWindowButtonStyle}" Visibility="Collapsed" Click="closeButton_Click" />
             <Button Content="スタンバイ" Style="{StaticResource AppMainWindowButtonStyle}" Visibility="Collapsed" Click="standbyButton_Click" />

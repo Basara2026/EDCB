@@ -23,6 +23,7 @@
             <MenuItem Header="チューナー強制" Name="TunerID" IsCheckable="True" Click="headerSelect_Click" />
             <MenuItem Header="録画後実行bat" Name="BatFilePath" IsCheckable="True" Click="headerSelect_Click" />
             <MenuItem Header="タグ" Name="BatFileTag" IsCheckable="True" Click="headerSelect_Click" />
+            <MenuItem Header="録画後動作" Name="RecEndMode" IsCheckable="True" Click="headerSelect_Click" />
             <MenuItem Header="予想サイズ" Name="EstimatedRecSize" IsCheckable="True" Click="headerSelect_Click" />
             <MenuItem Header="ID" Name="ID" IsCheckable="True" Click="headerSelect_Click" />
             <Separator />
@@ -56,6 +57,7 @@
             <MenuItem Header="番組表へジャンプ" Click="jumpToProgramTable_Click" InputGestureText="F3" />
             <MenuItem Header="自動予約登録" Click="autoadd_Click" />
             <MenuItem Header="追っかけ再生" Click="timeShiftPlay_Click" InputGestureText="Ctrl + P" />
+            <MenuItem Header="番組内容をコピー (_Y)" Click="copyProgram_Click" />
             <Separator />
             <MenuItem Header="プログラム予約追加" Click="button_add_manual_Click" />
         </ContextMenu>
@@ -203,6 +205,11 @@
                     <GridViewColumn DisplayMemberBinding="{Binding BatFileTag}">
                         <GridViewColumn.Header>
                             <GridViewColumnHeader Content="タグ" Tag="BatFileTag" HorizontalContentAlignment="Left" />
+                        </GridViewColumn.Header>
+                    </GridViewColumn>
+                    <GridViewColumn DisplayMemberBinding="{Binding RecEndMode}">
+                        <GridViewColumn.Header>
+                            <GridViewColumnHeader Content="録画後動作" Tag="RecEndMode" HorizontalContentAlignment="Left" />
                         </GridViewColumn.Header>
                     </GridViewColumn>
                     <GridViewColumn DisplayMemberBinding="{Binding EstimatedRecSize}">

@@ -107,7 +107,7 @@
                                 <ComboBox Grid.Column="1" IsEditable="True" Name="comboBox_appFont" Style="{StaticResource AppComboBoxStyle}" Text="{Binding AppFontName}" />
                                 <StackPanel Grid.Column="2" Margin="{StaticResource AppEdgeMarginR}" Orientation="Horizontal">
                                     <Label Content="サイズ" Margin="{StaticResource AppMarginL}" Style="{StaticResource AppTermLabelStyle}" />
-                                    <TextBox InputMethod.IsInputMethodEnabled="False" Style="{StaticResource AppNarrowTextBoxStyle}" Text="{Binding AppFontSize}" />
+                                    <local:SpinTextBox InputMethod.IsInputMethodEnabled="False" Text="{Binding AppFontSize}" />
                                     <Button Content="テスト" Margin="{StaticResource AppMarginL}" Style="{StaticResource AppButtonStyle}" Click="button_testAppFont_Click" />
                                 </StackPanel>
                             </Grid>
@@ -118,6 +118,88 @@
                             </Grid>
                         </StackPanel>
                     </DockPanel>
+                    <StackPanel Margin="{StaticResource AppWideMarginT}">
+                        <Label Content="画面ごとのフォント(空欄・0で全体の設定を使う)" Margin="{StaticResource AppWideMarginT}" Style="{StaticResource AppLabelStyle}" />
+                        <Grid Margin="{StaticResource AppMarginT}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <Label Content="上部プルダウンメニュー" Grid.Row="0" Margin="{StaticResource AppIndentMargin}" Style="{StaticResource AppTermLabelStyle}" />
+                            <ComboBox Grid.Column="1" Grid.Row="0" IsEditable="True" Name="comboBox_fontToolbar" Style="{StaticResource AppComboBoxStyle}" Text="{Binding ToolbarFontName}" />
+                            <StackPanel Grid.Column="2" Grid.Row="0" Margin="{StaticResource AppEdgeMarginR}" Orientation="Horizontal">
+                                <Label Content="サイズ" Margin="{StaticResource AppMarginL}" Style="{StaticResource AppTermLabelStyle}" />
+                                <local:SpinTextBox InputMethod.IsInputMethodEnabled="False" Text="{Binding ToolbarFontSize}" />
+                                <Label Content="太さ" Margin="{StaticResource AppMarginL}" Style="{StaticResource AppTermLabelStyle}" />
+                                <Slider IsSnapToTickEnabled="True" LargeChange="100" Maximum="900" Minimum="100" Name="slider_weightToolbar" SmallChange="100" TickFrequency="100" ToolTip="100(細い)〜900(太い)。フォントに用意されている太さのうち、近いものが使われます(太さの種類がないフォントでは変わらないことがあります)" Value="{Binding ToolbarFontWeight}" VerticalAlignment="Center" Width="120" />
+                                <Label Content="{Binding Value, ElementName=slider_weightToolbar}" MinWidth="30" Style="{StaticResource AppLabelStyle}" />
+                            </StackPanel>
+                            <FrameworkElement Grid.Row="1" Margin="{StaticResource AppMarginT}" />
+                            <Label Content="予約一覧" Grid.Row="2" Margin="{StaticResource AppIndentMargin}" Style="{StaticResource AppTermLabelStyle}" />
+                            <ComboBox Grid.Column="1" Grid.Row="2" IsEditable="True" Name="comboBox_fontReserveView" Style="{StaticResource AppComboBoxStyle}" Text="{Binding ReserveViewFontName}" />
+                            <StackPanel Grid.Column="2" Grid.Row="2" Margin="{StaticResource AppEdgeMarginR}" Orientation="Horizontal">
+                                <Label Content="サイズ" Margin="{StaticResource AppMarginL}" Style="{StaticResource AppTermLabelStyle}" />
+                                <local:SpinTextBox InputMethod.IsInputMethodEnabled="False" Text="{Binding ReserveViewFontSize}" />
+                                <Label Content="太さ" Margin="{StaticResource AppMarginL}" Style="{StaticResource AppTermLabelStyle}" />
+                                <Slider IsSnapToTickEnabled="True" LargeChange="100" Maximum="900" Minimum="100" Name="slider_weightReserveView" SmallChange="100" TickFrequency="100" ToolTip="100(細い)〜900(太い)。フォントに用意されている太さのうち、近いものが使われます(太さの種類がないフォントでは変わらないことがあります)" Value="{Binding ReserveViewFontWeight}" VerticalAlignment="Center" Width="120" />
+                                <Label Content="{Binding Value, ElementName=slider_weightReserveView}" MinWidth="30" Style="{StaticResource AppLabelStyle}" />
+                            </StackPanel>
+                            <FrameworkElement Grid.Row="3" Margin="{StaticResource AppMarginT}" />
+                            <Label Content="録画済み一覧" Grid.Row="4" Margin="{StaticResource AppIndentMargin}" Style="{StaticResource AppTermLabelStyle}" />
+                            <ComboBox Grid.Column="1" Grid.Row="4" IsEditable="True" Name="comboBox_fontRecInfoView" Style="{StaticResource AppComboBoxStyle}" Text="{Binding RecInfoViewFontName}" />
+                            <StackPanel Grid.Column="2" Grid.Row="4" Margin="{StaticResource AppEdgeMarginR}" Orientation="Horizontal">
+                                <Label Content="サイズ" Margin="{StaticResource AppMarginL}" Style="{StaticResource AppTermLabelStyle}" />
+                                <local:SpinTextBox InputMethod.IsInputMethodEnabled="False" Text="{Binding RecInfoViewFontSize}" />
+                                <Label Content="太さ" Margin="{StaticResource AppMarginL}" Style="{StaticResource AppTermLabelStyle}" />
+                                <Slider IsSnapToTickEnabled="True" LargeChange="100" Maximum="900" Minimum="100" Name="slider_weightRecInfoView" SmallChange="100" TickFrequency="100" ToolTip="100(細い)〜900(太い)。フォントに用意されている太さのうち、近いものが使われます(太さの種類がないフォントでは変わらないことがあります)" Value="{Binding RecInfoViewFontWeight}" VerticalAlignment="Center" Width="120" />
+                                <Label Content="{Binding Value, ElementName=slider_weightRecInfoView}" MinWidth="30" Style="{StaticResource AppLabelStyle}" />
+                            </StackPanel>
+                            <FrameworkElement Grid.Row="5" Margin="{StaticResource AppMarginT}" />
+                            <Label Content="自動予約登録" Grid.Row="6" Margin="{StaticResource AppIndentMargin}" Style="{StaticResource AppTermLabelStyle}" />
+                            <ComboBox Grid.Column="1" Grid.Row="6" IsEditable="True" Name="comboBox_fontAutoAddView" Style="{StaticResource AppComboBoxStyle}" Text="{Binding AutoAddViewFontName}" />
+                            <StackPanel Grid.Column="2" Grid.Row="6" Margin="{StaticResource AppEdgeMarginR}" Orientation="Horizontal">
+                                <Label Content="サイズ" Margin="{StaticResource AppMarginL}" Style="{StaticResource AppTermLabelStyle}" />
+                                <local:SpinTextBox InputMethod.IsInputMethodEnabled="False" Text="{Binding AutoAddViewFontSize}" />
+                                <Label Content="太さ" Margin="{StaticResource AppMarginL}" Style="{StaticResource AppTermLabelStyle}" />
+                                <Slider IsSnapToTickEnabled="True" LargeChange="100" Maximum="900" Minimum="100" Name="slider_weightAutoAddView" SmallChange="100" TickFrequency="100" ToolTip="100(細い)〜900(太い)。フォントに用意されている太さのうち、近いものが使われます(太さの種類がないフォントでは変わらないことがあります)" Value="{Binding AutoAddViewFontWeight}" VerticalAlignment="Center" Width="120" />
+                                <Label Content="{Binding Value, ElementName=slider_weightAutoAddView}" MinWidth="30" Style="{StaticResource AppLabelStyle}" />
+                            </StackPanel>
+                            <FrameworkElement Grid.Row="7" Margin="{StaticResource AppMarginT}" />
+                            <Label Content="使用予定チューナー" Grid.Row="8" Margin="{StaticResource AppIndentMargin}" Style="{StaticResource AppTermLabelStyle}" />
+                            <ComboBox Grid.Column="1" Grid.Row="8" IsEditable="True" Name="comboBox_fontTunerReserveView" Style="{StaticResource AppComboBoxStyle}" Text="{Binding TunerReserveViewFontName}" />
+                            <StackPanel Grid.Column="2" Grid.Row="8" Margin="{StaticResource AppEdgeMarginR}" Orientation="Horizontal">
+                                <Label Content="サイズ" Margin="{StaticResource AppMarginL}" Style="{StaticResource AppTermLabelStyle}" />
+                                <local:SpinTextBox InputMethod.IsInputMethodEnabled="False" Text="{Binding TunerReserveViewFontSize}" />
+                                <Label Content="太さ" Margin="{StaticResource AppMarginL}" Style="{StaticResource AppTermLabelStyle}" />
+                                <Slider IsSnapToTickEnabled="True" LargeChange="100" Maximum="900" Minimum="100" Name="slider_weightTunerReserveView" SmallChange="100" TickFrequency="100" ToolTip="100(細い)〜900(太い)。フォントに用意されている太さのうち、近いものが使われます(太さの種類がないフォントでは変わらないことがあります)" Value="{Binding TunerReserveViewFontWeight}" VerticalAlignment="Center" Width="120" />
+                                <Label Content="{Binding Value, ElementName=slider_weightTunerReserveView}" MinWidth="30" Style="{StaticResource AppLabelStyle}" />
+                            </StackPanel>
+                            <FrameworkElement Grid.Row="9" Margin="{StaticResource AppMarginT}" />
+                            <Label Content="番組表(リスト表示)" Grid.Row="10" Margin="{StaticResource AppIndentMargin}" Style="{StaticResource AppTermLabelStyle}" />
+                            <ComboBox Grid.Column="1" Grid.Row="10" IsEditable="True" Name="comboBox_fontEpgListView" Style="{StaticResource AppComboBoxStyle}" Text="{Binding EpgListViewFontName}" />
+                            <StackPanel Grid.Column="2" Grid.Row="10" Margin="{StaticResource AppEdgeMarginR}" Orientation="Horizontal">
+                                <Label Content="サイズ" Margin="{StaticResource AppMarginL}" Style="{StaticResource AppTermLabelStyle}" />
+                                <local:SpinTextBox InputMethod.IsInputMethodEnabled="False" Text="{Binding EpgListViewFontSize}" />
+                                <Label Content="太さ" Margin="{StaticResource AppMarginL}" Style="{StaticResource AppTermLabelStyle}" />
+                                <Slider IsSnapToTickEnabled="True" LargeChange="100" Maximum="900" Minimum="100" Name="slider_weightEpgListView" SmallChange="100" TickFrequency="100" ToolTip="100(細い)〜900(太い)。フォントに用意されている太さのうち、近いものが使われます(太さの種類がないフォントでは変わらないことがあります)" Value="{Binding EpgListViewFontWeight}" VerticalAlignment="Center" Width="120" />
+                                <Label Content="{Binding Value, ElementName=slider_weightEpgListView}" MinWidth="30" Style="{StaticResource AppLabelStyle}" />
+                            </StackPanel>
+                        </Grid>
+                    </StackPanel>
                 </StackPanel>
                 <TextBlock HorizontalAlignment="Right" Margin="{StaticResource AppEdgeMarginRB}" Name="textBlock_versionText" Panel.ZIndex="-1" Text="Ver." VerticalAlignment="Bottom" />
             </Grid>
@@ -155,7 +237,7 @@
                         </StackPanel>
                         <Label Content="項目" Grid.Column="2" Margin="{StaticResource AppMarginB}" Style="{StaticResource AppLabelStyle}" />
                         <ListBox Grid.Column="2" Grid.Row="1" Name="listBox_itemBtn" />
-                        <CheckBox Content="タブの位置に表示" Grid.Column="3" Grid.Row="1" IsChecked="{Binding ViewButtonShowAsTab}" Margin="{StaticResource AppWideMarginL}" Style="{StaticResource AppCheckBoxStyle}" VerticalAlignment="Top" />
+                        <CheckBox Content="ボタンレイアウト変更" Grid.Column="3" Grid.Row="1" IsChecked="{Binding ViewButtonShowAsTab}" Margin="{StaticResource AppWideMarginL}" Style="{StaticResource AppCheckBoxStyle}" VerticalAlignment="Top" />
                     </Grid>
                 </GroupBox>
                 <FrameworkElement Grid.Row="1" Margin="{StaticResource AppEdgeMarginT}" />
@@ -185,7 +267,7 @@
                         </StackPanel>
                         <Label Content="項目" Grid.Column="2" Margin="{StaticResource AppMarginB}" Style="{StaticResource AppLabelStyle}" />
                         <ListBox Grid.Column="2" Grid.Row="1" Name="listBox_itemTask" />
-                        <CheckBox Content="タブの位置に表示" Grid.Column="3" Grid.Row="1" Margin="{StaticResource AppWideMarginL}" Style="{StaticResource AppCheckBoxStyle}" VerticalAlignment="Top" Visibility="Hidden" />
+                        <CheckBox Content="ボタンレイアウト変更" Grid.Column="3" Grid.Row="1" Margin="{StaticResource AppWideMarginL}" Style="{StaticResource AppCheckBoxStyle}" VerticalAlignment="Top" Visibility="Hidden" />
                     </Grid>
                 </GroupBox>
             </Grid>

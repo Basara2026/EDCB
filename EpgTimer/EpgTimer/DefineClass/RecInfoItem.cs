@@ -49,11 +49,11 @@ namespace EpgTimer
         }
         public CommonManager.TimeDuration StartTime
         {
-            get { return new CommonManager.TimeDuration(true, RecInfo.StartTime, true, RecInfo.DurationSecond); }
+            get { return new CommonManager.TimeDuration(true, RecInfo.StartTime, true, RecInfo.DurationSecond, true); }
         }
         public CommonManager.TimeDuration StartTimeNoDuration
         {
-            get { return new CommonManager.TimeDuration(true, RecInfo.StartTime, true, double.NaN); }
+            get { return new CommonManager.TimeDuration(true, RecInfo.StartTime, true, double.NaN, true); }
         }
         public TimeSpan Duration
         {

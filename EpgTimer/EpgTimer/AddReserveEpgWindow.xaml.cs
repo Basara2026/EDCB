@@ -25,6 +25,7 @@ namespace EpgTimer
         public AddReserveEpgWindow()
         {
             InitializeComponent();
+            WindowPlacement.Apply(this, "AddReserveEpgWindow");
         }
 
         public void SetOpenMode(int mode)

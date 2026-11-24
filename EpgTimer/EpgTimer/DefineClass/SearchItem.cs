@@ -60,7 +60,7 @@ namespace EpgTimer
         }
         public CommonManager.TimeDuration StartTime
         {
-            get { return new CommonManager.TimeDuration(EventInfo.StartTimeFlag != 0, EventInfo.start_time, true, double.NaN); }
+            get { return new CommonManager.TimeDuration(EventInfo.StartTimeFlag != 0, EventInfo.start_time, true, double.NaN, true); }
         }
         public bool IsReserved
         {

@@ -118,7 +118,7 @@ namespace EpgTimer
             if (Settings.Instance.SetAppFont)
             {
                 //フォントを上書き
-                style.Setters.Add(new Setter(FontFamilyProperty, new FontFamily(Settings.Instance.AppFontName)));
+                style.Setters.Add(new Setter(FontFamilyProperty, CommonManager.CreateFontFamily(Settings.Instance.AppFontName)));
                 largeFontSize += Settings.Instance.AppFontSize - fontSize;
                 fontSize = Settings.Instance.AppFontSize;
                 rd.Add("AppFontSize", fontSize);
@@ -167,11 +167,70 @@ namespace EpgTimer
 
             InitializeComponent();
 
+            //「≡」のメニューが開いている間にボタンを押すと、メニューが閉じたあとのClickで再び開いてしまう。
+            //Closedイベントは遅れて届くことがあるので、IsOpenの変化を直接見て、ボタンの押下で閉じたときはClickで開き直さないようにする
+            System.ComponentModel.DependencyPropertyDescriptor.FromProperty(ContextMenu.IsOpenProperty, typeof(ContextMenu)).AddValueChanged(moreMenu, (sender, e) =>
+            {
+                if (moreMenu.IsOpen == false)
+                {
+                    moreMenuClosedTick = Environment.TickCount;
+                    //押している最中にボタン上で閉じたなら、そのClickでは開かない
+                    if (Mouse.LeftButton == MouseButtonState.Pressed && IsPointerOnMoreButton())
+                    {
+                        moreMenuSuppressClick = true;
+                    }
+                }
+            });
+            //メニューがマウスを捕まえている間のボタン上の押下は、ボタンではなくここに届く
+            Mouse.AddPreviewMouseDownOutsideCapturedElementHandler(moreMenu, (sender, e) =>
+            {
+                if (moreMenu.IsOpen && IsPointerOnMoreButton())
+                {
+                    moreMenuSuppressClick = true;
+                    moreMenu.IsOpen = false;
+                }
+            });
+            //ボタンに押下が届いたとき、メニューが開いている(または直前に閉じた)なら閉じるだけにして、Clickを起こさない
+            button_more.AddHandler(UIElement.PreviewMouseLeftButtonDownEvent, new MouseButtonEventHandler((sender, e) =>
+            {
+                if (moreMenu.IsOpen || unchecked(Environment.TickCount - moreMenuClosedTick) < 300)
+                {
+                    moreMenu.IsOpen = false;
+                    e.Handled = true;
+                }
+            }), true);
+            //Clickのあと(handledEventsToo)と、ボタンの外へ出たときに、開き直さないための印を解除する
+            button_more.AddHandler(UIElement.MouseLeftButtonUpEvent, new MouseButtonEventHandler((sender, e) => moreMenuSuppressClick = false), true);
+            button_more.MouseLeave += (sender, e) => moreMenuSuppressClick = false;
+
+            //上部のプルダウンメニューを右クリックしたとき、グレーアウトした「切り取り/コピー/貼り付け」が出ないようにする
+            //(プルダウン内部のテキストボックスの既定のメニュー。右クリックを離した処理を先に受けて止め、メニューを開かせない)
+            grid_toolbar.PreviewMouseRightButtonUp += (sender, e) => e.Handled = true;
+            grid_toolbar.PreviewKeyDown += (sender, e) =>
+            {
+                //キーボードからのメニュー表示(アプリケーションキー、Shift+F10)も同様
+                if (e.Key == Key.Apps || (e.Key == Key.F10 && (Keyboard.Modifiers & ModifierKeys.Shift) != ModifierKeys.None))
+                {
+                    e.Handled = true;
+                }
+            };
+
             Title = appName;
 
             //スクロールバーの操作性のため
             tabControl_main.BorderThickness = new Thickness(0, tabControl_main.BorderThickness.Top, 0, 0);
             tabControl_main.Padding = new Thickness(0, tabControl_main.Padding.Top, 0, 0);
+
+            //「ボタンレイアウト変更」のプルダウンメニューの行を、タブや番組表の切り替えに合わせて更新する
+            tabControl_main.SelectionChanged += (sender, e) =>
+            {
+                if (ReferenceEquals(e.OriginalSource, tabControl_main))
+                {
+                    UpdateToolbar();
+                }
+            };
+            epgView.NavigationChanged += (sender, e) => UpdateToolbar();
+            autoAddView.NavigationChanged += (sender, e) => UpdateToolbar();
 
             try
             {
@@ -367,11 +426,8 @@ namespace EpgTimer
             {
                 if (info == "（空白）")
                 {
-                    if (Settings.Instance.ViewButtonShowAsTab == false)
-                    {
-                        var separator = new FrameworkElement() { Width = (double)FindResource("AppMainWindowButtonSeparatorWidth") };
-                        stackPanel_button.Children.Add(separator);
-                    }
+                    var separator = new FrameworkElement() { Width = (double)FindResource("AppMainWindowButtonSeparatorWidth") };
+                    stackPanel_button.Children.Add(separator);
                 }
                 else
                 {
@@ -387,35 +443,233 @@ namespace EpgTimer
                             button.Content = Settings.Instance.Cust2BtnName;
                         }
 
-                        if (Settings.Instance.ViewButtonShowAsTab)
-                        {
-                            //ボタン風のタブを追加する
-                            TabItem ti = new TabItem();
-                            ti.Header = button.Content;
-                            ti.Tag = "PushLike" + info;
-                            ti.Background = null;
-                            ti.BorderBrush = null;
-                            //タブ移動をキャンセルしつつ擬似的に対応するボタンを押す
-                            ti.PreviewMouseDown += (sender, e) =>
-                            {
-                                if (e.ChangedButton == MouseButton.Left)
-                                {
-                                    button.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
-                                    e.Handled = true;
-                                }
-                            };
-                            tabControl_main.Items.Add(ti);
-                        }
-                        else
-                        {
-                            //必要なボタンだけ可視化
-                            stackPanel_button.Children.Remove(button);
-                            stackPanel_button.Children.Add(button);
-                            button.Visibility = Visibility.Visible;
-                        }
+                        //必要なボタンだけ可視化
+                        stackPanel_button.Children.Remove(button);
+                        stackPanel_button.Children.Add(button);
+                        button.Visibility = Visibility.Visible;
                     }
                 }
             }
+            ApplyViewFonts();
+            ApplyTabLayout();
+        }
+
+        /// <summary>
+        /// 予約一覧、録画済み一覧、自動予約登録、使用予定チューナーの各画面と、上部のプルダウンメニューのフォントとサイズを、動作設定の値にする。
+        /// 空欄・0の項目は、全体のフォントの設定(なければ既定)を使う
+        /// </summary>
+        private void ApplyViewFonts()
+        {
+            Settings settings = Settings.Instance;
+            ApplyViewFont(reserveView, settings.ReserveViewFontName, settings.ReserveViewFontSize, settings.ReserveViewFontWeight);
+            ApplyViewFont(recInfoView, settings.RecInfoViewFontName, settings.RecInfoViewFontSize, settings.RecInfoViewFontWeight);
+            ApplyViewFont(autoAddView, settings.AutoAddViewFontName, settings.AutoAddViewFontSize, settings.AutoAddViewFontWeight);
+            ApplyViewFont(tunerReserveView, settings.TunerReserveViewFontName, settings.TunerReserveViewFontSize, settings.TunerReserveViewFontWeight);
+            ApplyViewFont(grid_toolbar, settings.ToolbarFontName, settings.ToolbarFontSize, settings.ToolbarFontWeight);
+            ApplyViewFont(moreMenu, settings.ToolbarFontName, settings.ToolbarFontSize, settings.ToolbarFontWeight);
+        }
+
+        private static void ApplyViewFont(DependencyObject element, string fontName, double fontSize, int fontWeight)
+        {
+            if (string.IsNullOrWhiteSpace(fontName))
+            {
+                element.ClearValue(TextElement.FontFamilyProperty);
+            }
+            else
+            {
+                element.SetValue(TextElement.FontFamilyProperty, CommonManager.CreateFontFamily(fontName));
+            }
+            if (fontSize >= 1 && fontSize <= 200)
+            {
+                element.SetValue(TextElement.FontSizeProperty, fontSize);
+            }
+            else
+            {
+                element.ClearValue(TextElement.FontSizeProperty);
+            }
+            if (fontWeight >= 1 && fontWeight <= 999 && fontWeight != 400)
+            {
+                element.SetValue(TextElement.FontWeightProperty, FontWeight.FromOpenTypeWeight(fontWeight));
+            }
+            else
+            {
+                element.ClearValue(TextElement.FontWeightProperty);
+            }
+        }
+
+        private ContextMenu moreMenu = new ContextMenu();
+        private int moreMenuClosedTick = Environment.TickCount - 100000;
+        private bool moreMenuSuppressClick = false;
+
+        private bool IsPointerOnMoreButton()
+        {
+            //メニューがマウスを捕まえている間はIsMouseOverが当てにならないので、座標で判定する
+            Point pos = Mouse.GetPosition(button_more);
+            return pos.X >= 0 && pos.Y >= 0 && pos.X < button_more.ActualWidth && pos.Y < button_more.ActualHeight;
+        }
+        private bool updatingToolbar = false;
+        private TabItem[] mainTabOrder;
+
+        /// <summary>
+        /// 「ボタンレイアウト変更」のとき、ボタンやタブの見出しの代わりに、ウィンドウ上部にプルダウンメニューの行を表示する。
+        /// 左から、表示の切り替え、番組表の切り替え(自動予約登録のときはEPG予約/プログラム予約の切り替え)、日付・時間帯の切り替え。右端の「≡」には設定などのボタンをまとめる
+        /// </summary>
+        private void ApplyTabLayout()
+        {
+            bool layout = Settings.Instance.ViewButtonShowAsTab;
+            grid_toolbar.Visibility = layout ? Visibility.Visible : Visibility.Collapsed;
+            stackPanel_button.Visibility = layout ? Visibility.Collapsed : Visibility.Visible;
+            TabHeaderLayout.SetHeaderVisible(tabControl_main, layout == false);
+            epgView.SetHeaderVisible(layout == false);
+            autoAddView.SetHeaderVisible(layout == false);
+            if (layout)
+            {
+                BuildMoreMenu();
+                if (mainTabOrder == null)
+                {
+                    mainTabOrder = new[] { tabItem_epg, tabItem_reserve, tabItem_recinfo, tabItem_epgAutoAdd, tabItem_tunerReserve };
+                    updatingToolbar = true;
+                    foreach (TabItem tab in mainTabOrder)
+                    {
+                        comboBox_main.Items.Add(tab.Header);
+                    }
+                    updatingToolbar = false;
+                }
+            }
+            UpdateToolbar();
+        }
+
+        /// <summary>
+        /// 右端の「≡」のメニューを、表示するボタンの設定に合わせて作る
+        /// </summary>
+        private void BuildMoreMenu()
+        {
+            moreMenu.Items.Clear();
+            foreach (UIElement child in stackPanel_button.Children)
+            {
+                var button = child as Button;
+                if (button != null)
+                {
+                    if (button.Visibility == Visibility.Visible)
+                    {
+                        var target = button;
+                        var item = new MenuItem();
+                        item.Header = button.Content as string ?? button.Tag as string;
+                        item.Click += (sender, e) => target.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+                        moreMenu.Items.Add(item);
+                    }
+                }
+                else if (child is FrameworkElement && moreMenu.Items.Count > 0 && (moreMenu.Items[moreMenu.Items.Count - 1] is Separator) == false)
+                {
+                    //「（空白）」の項目は区切り線にする
+                    moreMenu.Items.Add(new Separator());
+                }
+            }
+            button_more.IsEnabled = moreMenu.Items.Count > 0;
+        }
+
+        /// <summary>
+        /// プルダウンメニューの行の選択状態を、現在のタブと番組表に合わせる
+        /// </summary>
+        private void UpdateToolbar()
+        {
+            if (Settings.Instance.ViewButtonShowAsTab == false || mainTabOrder == null)
+            {
+                return;
+            }
+            updatingToolbar = true;
+            try
+            {
+                comboBox_main.SelectedIndex = Array.IndexOf(mainTabOrder, tabControl_main.SelectedItem as TabItem);
+
+                //番組表のタブが選ばれているときだけ、番組表の切り替えと日付・時間帯のメニューを表示する
+                bool epgSelected = ReferenceEquals(tabControl_main.SelectedItem, tabItem_epg);
+                List<string> names = epgView.GetTabNames();
+                if (comboBox_epgTab.Items.Count != names.Count || names.Where((name, i) => (string)comboBox_epgTab.Items[i] != name).Any())
+                {
+                    comboBox_epgTab.Items.Clear();
+                    foreach (string name in names)
+                    {
+                        comboBox_epgTab.Items.Add(name);
+                    }
+                }
+                comboBox_epgTab.SelectedIndex = epgView.SelectedTabIndex;
+                comboBox_epgTab.Visibility = epgSelected && names.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+
+                FrameworkElement datePulldown = epgView.GetSelectedDatePulldown();
+                if (ReferenceEquals(contentControl_date.Content, datePulldown) == false)
+                {
+                    contentControl_date.Content = datePulldown;
+                }
+                contentControl_date.Visibility = epgSelected && datePulldown != null ? Visibility.Visible : Visibility.Collapsed;
+
+                //自動予約登録のタブが選ばれているときだけ、EPG予約/プログラム予約の切り替えを表示する
+                bool autoAddSelected = ReferenceEquals(tabControl_main.SelectedItem, tabItem_epgAutoAdd);
+                List<string> autoAddNames = autoAddView.GetTabNames();
+                if (comboBox_autoAddTab.Items.Count != autoAddNames.Count || autoAddNames.Where((name, i) => (string)comboBox_autoAddTab.Items[i] != name).Any())
+                {
+                    comboBox_autoAddTab.Items.Clear();
+                    foreach (string name in autoAddNames)
+                    {
+                        comboBox_autoAddTab.Items.Add(name);
+                    }
+                }
+                comboBox_autoAddTab.SelectedIndex = autoAddView.SelectedTabIndex;
+                comboBox_autoAddTab.Visibility = autoAddSelected && autoAddNames.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+            }
+            finally
+            {
+                updatingToolbar = false;
+            }
+        }
+
+        private void comboBox_main_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (updatingToolbar == false && mainTabOrder != null && comboBox_main.SelectedIndex >= 0)
+            {
+                tabControl_main.SelectedItem = mainTabOrder[comboBox_main.SelectedIndex];
+            }
+        }
+
+        private void comboBox_epgTab_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (updatingToolbar == false && comboBox_epgTab.SelectedIndex >= 0)
+            {
+                epgView.SelectedTabIndex = comboBox_epgTab.SelectedIndex;
+            }
+        }
+
+        private void comboBox_autoAddTab_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (updatingToolbar == false && comboBox_autoAddTab.SelectedIndex >= 0)
+            {
+                autoAddView.SelectedTabIndex = comboBox_autoAddTab.SelectedIndex;
+            }
+        }
+
+        private void moreButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (moreMenuSuppressClick)
+            {
+                //開いていたメニューをこのボタンの押下で閉じたところなので、開き直さない
+                moreMenuSuppressClick = false;
+                return;
+            }
+            if (moreMenu.IsOpen)
+            {
+                moreMenu.IsOpen = false;
+                return;
+            }
+            //メニューの右端を「≡」ボタンの右端にそろえて、ウィンドウの内側に表示する(右側に空きがあっても外側にはみ出さない)
+            moreMenu.PlacementTarget = button_more;
+            moreMenu.Placement = System.Windows.Controls.Primitives.PlacementMode.Custom;
+            moreMenu.CustomPopupPlacementCallback = (popupSize, targetSize, offset) => new[]
+            {
+                new System.Windows.Controls.Primitives.CustomPopupPlacement(
+                    new Point(targetSize.Width - popupSize.Width, targetSize.Height),
+                    System.Windows.Controls.Primitives.PopupPrimaryAxis.Horizontal)
+            };
+            moreMenu.IsOpen = true;
         }
 
         public void TaskTrayLeftClick()
@@ -795,16 +1049,26 @@ namespace EpgTimer
             {
                 var setting = new SettingWindow();
                 setting.Owner = (Window)topWindow.RootVisual;
+                //「適用」ボタンでも、OKで閉じたときと同じ反映を行う
+                setting.SettingApplied += (sender, e) => ApplySettingChanges();
                 if (setting.ShowDialog() == true)
                 {
-                    epgView.UpdateSetting();
-                    tunerReserveView.Refresh();
-                    loadLogoTimer.Start();
-                    ResetButtonView();
-                    taskTray.ForceHideBalloonTipSec = Settings.Instance.ForceHideBalloonTipSec;
-                    taskTray.Visible = Settings.Instance.ShowTray;
+                    ApplySettingChanges();
                 }
             }
+        }
+
+        /// <summary>
+        /// 設定ウィンドウで変更した設定を画面に反映する
+        /// </summary>
+        void ApplySettingChanges()
+        {
+            epgView.UpdateSetting();
+            tunerReserveView.Refresh();
+            loadLogoTimer.Start();
+            ResetButtonView();
+            taskTray.ForceHideBalloonTipSec = Settings.Instance.ForceHideBalloonTipSec;
+            taskTray.Visible = Settings.Instance.ShowTray;
         }
 
         void searchButton_Click(object sender, RoutedEventArgs e)

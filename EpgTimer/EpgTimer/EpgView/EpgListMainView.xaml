@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d" 
              d:DesignHeight="500" d:DesignWidth="700" IsVisibleChanged="UserControl_IsVisibleChanged" PreviewKeyDown="UserControl_PreviewKeyDown">
-    <Grid>
+    <Grid Name="grid_list">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="{StaticResource AppEpgListServiceGridWidth}" />
             <ColumnDefinition Width="Auto" />
@@ -17,7 +17,7 @@
         </Grid.RowDefinitions>
         <FrameworkElement Grid.Column="1" Margin="{StaticResource AppMarginL}" />
         <GridSplitter Grid.Column="1" Grid.RowSpan="2" HorizontalAlignment="Stretch" Name="gridSplitter1" />
-        <Grid Grid.Column="2" Grid.RowSpan="2">
+        <Grid Grid.Column="2" Grid.RowSpan="2" Name="grid_right">
             <Grid.RowDefinitions>
                 <RowDefinition Height="{StaticResource AppEpgListEventGridHeight}" />
                 <RowDefinition Height="Auto" />
@@ -120,6 +120,7 @@
                         <MenuItem x:Name="cm_del" Header="予約削除" Click="cm_del_Click" />
                         <MenuItem x:Name="cm_autoadd" Header="自動予約登録" Click="cm_autoadd_Click" />
                         <MenuItem x:Name="cm_timeshift" Header="追っかけ再生 (_P)" Click="cm_timeShiftPlay_Click" />
+                        <MenuItem x:Name="cm_copy" Header="番組内容をコピー (_Y)" Click="cm_copy_Click" />
                         <Separator/>
                         <MenuItem x:Name="cm_chg_viewMode1" Header="標準モード (_1)" Click="cm_chg_viewMode_Click" />
                         <MenuItem x:Name="cm_chg_viewMode2" Header="1週間モード (_2)" Click="cm_chg_viewMode_Click" />
@@ -129,7 +130,7 @@
                 </ListView.ContextMenu>
             </ListView>
         </Grid>
-        <ListView Name="listBox_service">
+        <ListView Name="listBox_service" ScrollViewer.HorizontalScrollBarVisibility="Disabled" SizeChanged="listBox_service_SizeChanged">
             <ListView.View>
                 <GridView x:Name="gridView_service">
                     <GridViewColumn>
@@ -142,7 +143,7 @@
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
-                    <GridViewColumn DisplayMemberBinding="{Binding Path=ServiceName}" Width="{StaticResource AppEpgListServiceColumnWidth}">
+                    <GridViewColumn DisplayMemberBinding="{Binding Path=EpgServiceName}" Width="{StaticResource AppEpgListServiceColumnWidth}">
                         <GridViewColumn.Header>
                             <GridViewColumnHeader Content="サービス名" HorizontalContentAlignment="Left" />
                         </GridViewColumn.Header>
@@ -150,28 +151,10 @@
                 </GridView>
             </ListView.View>
         </ListView>
-        <Grid Grid.Row="1" Margin="{StaticResource AppMarginT}">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="2*" />
-                <ColumnDefinition Width="2*" />
-            </Grid.ColumnDefinitions>
-            <Button Content="←" ContextMenuOpening="button_time_ContextMenuOpening" IsEnabled="False" Name="button_prev" Style="{StaticResource AppEpgListButtonStyle}" VerticalAlignment="Top" Click="button_time_Click">
-                <Button.ContextMenu>
-                    <ContextMenu />
-                </Button.ContextMenu>
-            </Button>
-            <Button Content="→" ContextMenuOpening="button_time_ContextMenuOpening" Grid.Column="1" IsEnabled="False" Name="button_next" Style="{StaticResource AppEpgListButtonStyle}" VerticalAlignment="Top" Click="button_time_Click">
-                <Button.ContextMenu>
-                    <ContextMenu />
-                </Button.ContextMenu>
-            </Button>
-            <FrameworkElement Grid.Column="2" Margin="{StaticResource AppMarginL}" />
-            <Button Content="全チェック" Grid.Column="3" Name="button_chkAll" Style="{StaticResource AppEpgListButtonStyle}" Click="button_chkAll_Click" />
-            <Button Content="クリア" Grid.Column="4" Name="button_clearAll" Style="{StaticResource AppEpgListButtonStyle}" Click="button_clearAll_Click" />
-        </Grid>
+        <StackPanel Grid.Row="1" Margin="{StaticResource AppMarginT}">
+            <Button Content="クリア" Name="button_clearAll" Style="{StaticResource AppEpgListButtonStyle}" Click="button_clearAll_Click" />
+            <Button Content="全チェック" Margin="{StaticResource AppMarginT}" Name="button_chkAll" Style="{StaticResource AppEpgListButtonStyle}" Click="button_chkAll_Click" />
+        </StackPanel>
         <Popup Name="popup_error" StaysOpen="False" Style="{StaticResource AppErrorMessagePopupStyle}">
             <ContentControl Template="{StaticResource AppErrorMessagePopupTemplate}" />
         </Popup>

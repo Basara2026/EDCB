@@ -21,6 +21,7 @@ namespace EpgTimer
         public SetDefSearchSettingWindow()
         {
             InitializeComponent();
+            WindowPlacement.Apply(this, "SetDefSearchSettingWindow");
         }
 
         public void SetDefSetting(EpgSearchKeyInfo key)

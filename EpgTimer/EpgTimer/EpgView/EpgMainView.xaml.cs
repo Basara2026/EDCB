@@ -37,11 +37,18 @@ namespace EpgTimer
 
         private bool updateEpgData = true;
         private bool updateReserveData = true;
-        private readonly Tuple<double, double, double> initialGridPGDefinitionValues;
+        private Tuple<double, double, double> initialGridPGDefinitionValues;
+
+        /// <summary>
+        /// 日付と時間帯のプルダウンメニュー(「ボタンレイアウト変更」のとき、ウィンドウ上部のメニューの行に表示される)
+        /// </summary>
+        public DateTimePullDown DatePullDown { get; private set; }
 
         public EpgMainView(CustomEpgTabInfo setInfo, DateTime _baseTime)
         {
             InitializeComponent();
+            DatePullDown = new DateTimePullDown();
+            DatePullDown.TimeSelected += epgDateView_TimeButtonClick;
 
             double adjustment = (double)FindResource("AppScrollBarAdjustment");
             epgProgramView.Margin = new Thickness(0, 0, adjustment, adjustment);
@@ -67,8 +74,10 @@ namespace EpgTimer
         {
             epgProgramView.ClearInfo();
             timeView.ClearInfo();
+            timeViewRight.ClearInfo();
             serviceView.ClearInfo();
             dateView.ClearInfo();
+            DatePullDown.ClearInfo();
             timeList.Clear();
             serviceList.Clear();
             reserveList.Clear();
@@ -134,9 +143,14 @@ namespace EpgTimer
         /// <param name="e"></param>
         void epgProgramView_ScrollChanged(object sender, ScrollChangedEventArgs e)
         {
-            dateView.SetScrollTime(ScrollTime().AddMinutes(Math.Min(Math.Max(100 / setViewInfo.EpgSetting.MinHeight, 0), 120)));
+            {
+                DateTime scrollTime = ScrollTime().AddMinutes(Math.Min(Math.Max(100 / setViewInfo.EpgSetting.MinHeight, 0), 120));
+                dateView.SetScrollTime(scrollTime);
+                DatePullDown.SetScrollTime(scrollTime);
+            }
             //時間軸の表示もスクロール
             timeView.scrollViewer.ScrollToVerticalOffset(epgProgramView.scrollViewer.VerticalOffset);
+            timeViewRight.scrollViewer.ScrollToVerticalOffset(epgProgramView.scrollViewer.VerticalOffset);
             //サービス名表示もスクロール
             serviceView.scrollViewer.ScrollToHorizontalOffset(epgProgramView.scrollViewer.HorizontalOffset);
         }
@@ -433,6 +447,20 @@ namespace EpgTimer
         }
 
         /// <summary>
+        /// 右クリックメニュー 番組内容をコピーイベント呼び出し
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void cm_copy_Click(object sender, RoutedEventArgs e)
+        {
+            ProgramViewItem programView = ((Tuple<ReserveData, ProgramViewItem>)((MenuItem)sender).DataContext).Item2;
+            if (programView != null)
+            {
+                CommonManager.CopyProgramText(programView.EventInfo);
+            }
+        }
+
+        /// <summary>
         /// 右クリックメニュー 追っかけ再生イベント呼び出し
         /// </summary>
         /// <param name="sender"></param>
@@ -510,6 +538,7 @@ namespace EpgTimer
             cm_chg.Visibility = reserve != null ? Visibility.Visible : Visibility.Collapsed;
             cm_del.IsEnabled = reserve != null;
             cm_autoadd.IsEnabled = program != null;
+            cm_copy.IsEnabled = program != null;
             cm_timeshift.IsEnabled = reserve != null;
             if (reserve != null)
             {
@@ -625,7 +654,11 @@ namespace EpgTimer
                         }
                     }
                 }
-                dateView.SetScrollTime(ScrollTime().AddMinutes(Math.Min(Math.Max(100 / setViewInfo.EpgSetting.MinHeight, 0), 120)));
+                {
+                    DateTime scrollTime = ScrollTime().AddMinutes(Math.Min(Math.Max(100 / setViewInfo.EpgSetting.MinHeight, 0), 120));
+                    dateView.SetScrollTime(scrollTime);
+                    DatePullDown.SetScrollTime(scrollTime);
+                }
                 return true;
             }
             baseTime = lastTime;
@@ -787,6 +820,56 @@ namespace EpgTimer
             }
         }
 
+        /// <summary>
+        /// 「現在」ボタンとサービス名(日付)の行のフォントと高さを設定に合わせる
+        /// </summary>
+        private void ApplyHeaderFormat()
+        {
+            try
+            {
+                EpgHeaderFormat.Apply(setViewInfo.EpgSetting, false, grid_PG.RowDefinitions[0], grid_PG.RowDefinitions[1], new Control[] { button_now, button_nowRight }, serviceView);
+                EpgHeaderFormat.CenterTextBlocks(serviceView);
+                dateView.SetCentered(Settings.Instance.ViewButtonShowAsTab);
+                EpgHeaderFormat.ApplyTimeHeaderFont(setViewInfo.EpgSetting, timeView);
+                EpgHeaderFormat.ApplyTimeHeaderFont(setViewInfo.EpgSetting, timeViewRight);
+                Brush timeBrush = EpgHeaderFormat.GetTextBrush(setViewInfo.EpgSetting.TimeTextColor, setViewInfo.EpgSetting.TimeTextCustColor);
+                Color? timeBlurColor = EpgHeaderFormat.GetBlurColor(setViewInfo.EpgSetting.TimeBlurColorEnabled, setViewInfo.EpgSetting.TimeBlurColor, setViewInfo.EpgSetting.TimeBlurCustColor);
+                timeView.SetTextStyle(timeBrush, setViewInfo.EpgSetting.TimeBlurRadius, timeBlurColor);
+                timeViewRight.SetTextStyle(timeBrush, setViewInfo.EpgSetting.TimeBlurRadius, timeBlurColor);
+                //日付と時間(と「現在」ボタン)を左端・右端のどちらに表示するか
+                double leftWidth = EpgHeaderFormat.ApplyTimeHeaderPlace(setViewInfo.EpgSetting, grid_PG, timeView, timeViewRight, button_now, button_nowRight);
+                //「ボタンレイアウト変更」のときは、日付・時間帯の行はウィンドウ上部のプルダウンメニューに移すので隠す
+                bool pulldownMode = Settings.Instance.ViewButtonShowAsTab;
+                dateView.Visibility = pulldownMode ? Visibility.Collapsed : Visibility.Visible;
+                if (pulldownMode)
+                {
+                    grid_PG.RowDefinitions[0].Height = new GridLength(0);
+                }
+                //高DPI環境での位置合わせの基準になる行の高さも更新する
+                initialGridPGDefinitionValues = new Tuple<double, double, double>(
+                    leftWidth,
+                    grid_PG.RowDefinitions[0].Height.Value,
+                    grid_PG.RowDefinitions[1].Height.Value);
+            }
+            catch (Exception ex)
+            {
+                //ここはDispatcherの処理が止まっている最中に呼ばれることがありMessageBoxを出せないので出力のみ
+                System.Diagnostics.Debug.WriteLine(ex);
+            }
+            //位置合わせはレイアウトの処理中に行えないことがあるため、OnDpiChangedと同様に後で行う
+            Dispatcher.BeginInvoke(DispatcherPriority.Render, new Action(() =>
+            {
+                try
+                {
+                    AlignProgramViewPositionToDevicePixels();
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine(ex);
+                }
+            }));
+        }
+
         private void AlignProgramViewPositionToDevicePixels()
         {
             var ps = PresentationSource.FromVisual(this);
@@ -798,7 +881,7 @@ namespace EpgTimer
                     initialGridPGDefinitionValues.Item1,
                     initialGridPGDefinitionValues.Item2 + initialGridPGDefinitionValues.Item3));
                 Matrix m = ps.CompositionTarget.TransformToDevice;
-                grid_PG.ColumnDefinitions[0].Width = new GridLength(initialGridPGDefinitionValues.Item1 + Math.Floor(p.X * m.M11) / m.M11 - p.X);
+                grid_PG.ColumnDefinitions[0].Width = new GridLength(Math.Max(initialGridPGDefinitionValues.Item1 + Math.Floor(p.X * m.M11) / m.M11 - p.X, 0));
                 grid_PG.RowDefinitions[1].Height = new GridLength(initialGridPGDefinitionValues.Item3 + Math.Floor(p.Y * m.M22) / m.M22 - p.Y);
             }
         }
@@ -891,6 +974,7 @@ namespace EpgTimer
         {
             reserveList.Clear();
             timeView.ClearMarker();
+            timeViewRight.ClearMarker();
 
             if (serviceList.Count > 0 && baseTime >= CommonManager.Instance.DB.EventBaseTime)
             {
@@ -1015,18 +1099,21 @@ namespace EpgTimer
                     Brush brushNormal = ColorDef.CustColorBrush(setViewInfo.EpgSetting.ReserveRectColorNormal,
                                                                 setViewInfo.EpgSetting.ContentCustColorList[17], 0xA0);
                     timeView.AddMarker(timeRanges[0], brushNormal);
+                    timeViewRight.AddMarker(timeRanges[0], brushNormal);
                 }
                 if (timeRanges[1].Count > 0)
                 {
                     Brush brushWarning = ColorDef.CustColorBrush(setViewInfo.EpgSetting.ReserveRectColorWarning,
                                                                  setViewInfo.EpgSetting.ContentCustColorList[20], 0xA0);
                     timeView.AddMarker(timeRanges[1], brushWarning);
+                    timeViewRight.AddMarker(timeRanges[1], brushWarning);
                 }
                 if (timeRanges[2].Count > 0)
                 {
                     Brush brushNoTuner = ColorDef.CustColorBrush(setViewInfo.EpgSetting.ReserveRectColorNoTuner,
                                                                  setViewInfo.EpgSetting.ContentCustColorList[19], 0xA0);
                     timeView.AddMarker(timeRanges[2], brushNoTuner);
+                    timeViewRight.AddMarker(timeRanges[2], brushNoTuner);
                 }
             }
 
@@ -1344,20 +1431,24 @@ namespace EpgTimer
                     programGroupList,
                     timeList.Count * 60 * setViewInfo.EpgSetting.MinHeight);
 
-                var timeBrushList = new List<Brush>();
-                for (int i = 0; i < setViewInfo.EpgSetting.TimeColorList.Count; i++)
-                {
-                    SolidColorBrush brush = ColorDef.CustColorBrush(setViewInfo.EpgSetting.TimeColorList[i], setViewInfo.EpgSetting.TimeCustColorList[i]);
-                    timeBrushList.Add(setViewInfo.EpgSetting.EpgGradationHeader ? (Brush)ColorDef.GradientBrush(brush.Color) : brush);
-                }
-                timeView.SetTime(timeList.Keys, 60 * setViewInfo.EpgSetting.MinHeight, setViewInfo.NeedTimeOnlyBasic, timeBrushList, false);
+                var timeBrushList = EpgHeaderFormat.CreateTimeBrushes(setViewInfo.EpgSetting);
+                timeView.SetTime(timeList.Keys, 60 * setViewInfo.EpgSetting.MinHeight, setViewInfo.NeedTimeOnlyBasic, timeBrushList, false, setViewInfo.EpgSetting.FontWeightTimeHeader);
+                timeViewRight.SetTime(timeList.Keys, 60 * setViewInfo.EpgSetting.MinHeight, setViewInfo.NeedTimeOnlyBasic, timeBrushList, false, setViewInfo.EpgSetting.FontWeightTimeHeader);
                 dateView.SetTime(enablePrev, enableNext, timeList.FirstOrDefault().Key, timeList.LastOrDefault().Key);
+                DatePullDown.SetTime(timeList.FirstOrDefault().Key, timeList.LastOrDefault().Key);
 
                 SolidColorBrush serviceBrush = ColorDef.CustColorBrush(setViewInfo.EpgSetting.ServiceColor, setViewInfo.EpgSetting.ServiceCustColor);
                 serviceView.SetService(primeServiceList, setViewInfo.EpgSetting.ServiceWidth,
                                        setViewInfo.EpgSetting.EpgGradationHeader ? (Brush)ColorDef.GradientBrush(serviceBrush.Color) : serviceBrush,
                                        ColorDef.GetLuminance(serviceBrush.Color) > 0.55,
-                                       Settings.Instance.ToggleEpgModeOnHeaderLeftClick);
+                                       Settings.Instance.ToggleEpgModeOnHeaderLeftClick,
+                                       setViewInfo.EpgSetting.EpgServiceDetail,
+                                       setViewInfo.EpgSetting.ServiceLogoHeight,
+                                       setViewInfo.EpgSetting.ServiceBlurRadius,
+                                       EpgHeaderFormat.GetTextBrush(setViewInfo.EpgSetting.ServiceTextColor, setViewInfo.EpgSetting.ServiceTextCustColor),
+                                       setViewInfo.EpgSetting.ServiceColorCycle ? EpgHeaderFormat.CreateServiceCycleBrushes(setViewInfo.EpgSetting) : null,
+                                       EpgHeaderFormat.GetBlurColor(setViewInfo.EpgSetting.ServiceBlurColorEnabled, setViewInfo.EpgSetting.ServiceBlurColor, setViewInfo.EpgSetting.ServiceBlurCustColor));
+                ApplyHeaderFormat();
 
                 ReDrawNowLine();
             }

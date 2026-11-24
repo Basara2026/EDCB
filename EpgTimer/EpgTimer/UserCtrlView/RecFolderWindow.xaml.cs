@@ -23,6 +23,7 @@ namespace EpgTimer
         public RecFolderWindow()
         {
             InitializeComponent();
+            WindowPlacement.Apply(this, "RecFolderWindow");
 
             string plugInFile = "Write_Default.dll";
             string recNamePlugInFile = "";

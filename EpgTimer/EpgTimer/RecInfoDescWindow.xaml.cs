@@ -25,6 +25,7 @@ namespace EpgTimer
         public RecInfoDescWindow()
         {
             InitializeComponent();
+            WindowPlacement.Apply(this, "RecInfoDescWindow");
         }
 
         public void SetRecInfo(RecFileInfo info)
@@ -231,7 +232,7 @@ namespace EpgTimer
         {
             if (recInfo != null)
             {
-                string errorMessage = CommonManager.Instance.FilePlay(recInfo.RecFilePath, recInfo.ID);
+                string errorMessage = CommonManager.Instance.FilePlay(recInfo.RecFilePath);
                 if (errorMessage != null)
                 {
                     popup_play.DataContext = errorMessage;

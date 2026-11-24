@@ -24,11 +24,13 @@ namespace EpgTimer
             new List<KeyValuePair<string, bool>>() { new KeyValuePair<string, bool>("StartTime", false) };
 
         private uint autoAddID = 0;
+        private string wndKey = "SearchWindow";
         private bool searchOnLoaded = false;
 
         public SearchWindow()
         {
             InitializeComponent();
+            WindowPlacement.Attach(this, () => wndKey);
 
             var style = (Style)listView_result.FindResource("itemStyle");
             style.BasedOn = listView_result.ItemContainerStyle;
@@ -36,14 +38,18 @@ namespace EpgTimer
 
             try
             {
-                //ウインドウ位置の復元
-                if (Settings.Instance.SearchWndWidth != 0)
+                //ウインドウ位置とサイズの復元
+                if (WindowPlacement.Restore(this, wndKey) == false)
                 {
-                    this.Width = Settings.Instance.SearchWndWidth;
-                }
-                if (Settings.Instance.SearchWndHeight != 0)
-                {
-                    this.Height = Settings.Instance.SearchWndHeight;
+                    //旧バージョンの設定(サイズのみ)
+                    if (Settings.Instance.SearchWndWidth != 0)
+                    {
+                        this.Width = Settings.Instance.SearchWndWidth;
+                    }
+                    if (Settings.Instance.SearchWndHeight != 0)
+                    {
+                        this.Height = Settings.Instance.SearchWndHeight;
+                    }
                 }
                 if (Settings.Instance.SearchWndTabsHeight > 405)
                 {
@@ -78,6 +84,14 @@ namespace EpgTimer
             recSettingView.SetDefSetting(item.recSetting);
             Title = "EPG予約条件";
             button_chg_epgAutoAdd.Visibility = Visibility.Visible;
+
+            //検索ウィンドウとは別に位置とサイズを記憶する
+            wndKey = "EpgAutoAddWindow";
+            WindowPlacement.Restore(this, wndKey);
+            if (grid_Tabs.Height.IsAbsolute && grid_Tabs.Height.Value > Height)
+            {
+                grid_Tabs.Height = new GridLength(Height);
+            }
         }
 
         private void tabItem_searchKey_KeyDown(object sender, KeyEventArgs e)
@@ -363,8 +377,6 @@ namespace EpgTimer
 
         private void Window_Closing(object sender, CancelEventArgs e)
         {
-            Settings.Instance.SearchWndWidth = Width;
-            Settings.Instance.SearchWndHeight = Height;
             Settings.Instance.SearchWndTabsHeight = grid_Tabs.Height.Value;
             CommonManager.Instance.DB.ReserveInfoChanged -= RefreshReserve;
         }

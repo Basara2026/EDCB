@@ -23,6 +23,7 @@
         <StackPanel Grid.Row="1" HorizontalAlignment="Right" Margin="{StaticResource AppEdgeMargin}" Orientation="Horizontal">
             <Button Content="OK" Style="{StaticResource AppConfirmButtonStyle}" Click="button_OK_Click" />
             <Button Content="キャンセル" Margin="{StaticResource AppConfirmMargin}" Style="{StaticResource AppConfirmButtonStyle}" Click="button_cancel_Click" />
+            <Button Content="適用" Margin="{StaticResource AppConfirmMargin}" Name="button_apply" Style="{StaticResource AppConfirmButtonStyle}" Click="button_apply_Click" />
         </StackPanel>
     </Grid>
 </Window>

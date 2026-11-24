@@ -15,8 +15,9 @@
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="{StaticResource AppEpgHeaderGridLength}" />
             <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="{StaticResource AppEpgHeaderGridLength}" />
         </Grid.ColumnDefinitions>
-        <UniformGrid Rows="2">
+        <UniformGrid Name="uniformGrid_nav" Rows="2">
             <Button Content="←" IsEnabled="False" Name="button_prev" Style="{StaticResource AppEpgButtonStyle}" Visibility="Hidden" Click="button_time_Click" ContextMenuOpening="button_time_ContextMenuOpening">
                 <Button.ContextMenu>
                     <ContextMenu />
@@ -29,12 +30,13 @@
             </Button>
         </UniformGrid>
         <ComboBox Grid.Column="1" HorizontalAlignment="Left" Name="comboBox_service_ref" Style="{StaticResource AppComboBoxStyle}" VerticalAlignment="Top" Visibility="Hidden" />
-        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+        <StackPanel Grid.Column="1" Name="stackPanel_service" Orientation="Horizontal" VerticalAlignment="Center">
             <ComboBox Margin="{StaticResource AppMarginL}" Name="comboBox_service" Style="{StaticResource AppComboBoxStyle}" Width="{Binding ActualWidth, ElementName=comboBox_service_ref}" SelectionChanged="comboBox_service_SelectionChanged" />
-            <Button Content="標準モード" Margin="{StaticResource AppMarginL}" Style="{StaticResource AppButtonStyle}" Click="button1_Click" />
         </StackPanel>
-        <Button Content="現在" Grid.Row="1" Style="{StaticResource AppEpgButtonStyle}" Click="button_now_Click" />
+        <Button Content="━" ToolTip="現在" Grid.Row="1" Name="button_now" Style="{StaticResource AppEpgButtonStyle}" Click="button_now_Click" />
+        <Button Content="━" ToolTip="現在" Grid.Column="2" Grid.Row="1" Name="button_nowRight" Style="{StaticResource AppEpgButtonStyle}" Click="button_now_Click" />
         <my:TimeView Grid.Row="2" x:Name="timeView" />
+        <my:TimeView Grid.Column="2" Grid.Row="2" MarkerOnRight="True" x:Name="timeViewRight" />
         <my:WeekDayView Grid.Column="1" Grid.Row="1" x:Name="weekDayView" Click="weekDayView_Click" />
         <Grid ContextMenuOpening="grid_content_ContextMenuOpening" Grid.Column="1" Grid.Row="2" Name="grid_content">
             <my:ProgramView x:Name="epgProgramView" LeftDoubleClick="epgProgramView_LeftDoubleClick" ScrollChanged="epgProgramView_ScrollChanged" />
@@ -71,6 +73,7 @@
                     <MenuItem Click="cm_del_Click" Header="予約削除" Name="cm_del" />
                     <MenuItem Click="cm_autoadd_Click" Header="自動予約登録" Name="cm_autoadd" />
                     <MenuItem Click="cm_timeShiftPlay_Click" Header="追っかけ再生 (_P)" Name="cm_timeshift" />
+                    <MenuItem Click="cm_copy_Click" Header="番組内容をコピー (_Y)" Name="cm_copy" />
                     <Separator />
                     <MenuItem Click="cm_chg_viewMode_Click" Header="標準モード (_1)" Name="cm_chg_viewMode1" />
                     <MenuItem Click="cm_chg_viewMode_Click" Header="リスト表示モード (_3)" Name="cm_chg_viewMode3" />

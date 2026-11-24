@@ -22,6 +22,18 @@ namespace EpgTimer.EpgView
         public event Action<DateTime> TimeButtonClick;
         public event Action<DateTime, ContextMenu, ContextMenuEventArgs> TimeButtonContextMenuOpening;
 
+        /// <summary>
+        /// 日付・時間帯のボタンを、DateView全体(ウィンドウ)の中央に表示するかどうか。
+        /// 中央にするときは、左右に同じ幅の余白を置く。falseのときは従来どおり「←」「→」の右に左寄せで表示する
+        /// </summary>
+        public void SetCentered(bool centered)
+        {
+            //日付・時間帯の列が最大幅に達して余ったときだけ、左右の余白に均等に配る(幅が足りないときは日付・時間帯の列を優先する)
+            columnDefinition_leftSpace.Width = centered ? new GridLength(1, GridUnitType.Star) : new GridLength(0);
+            columnDefinition_rightSpace.Width = centered ? new GridLength(1, GridUnitType.Star) : new GridLength(0);
+            columnDefinition_rightFixed.Width = centered ? columnDefinition_prev_next.Width : new GridLength(0);
+        }
+
         public DateView()
         {
             InitializeComponent();
@@ -51,7 +63,9 @@ namespace EpgTimer.EpgView
             button_prev.Visibility = enablePrev || enableNext ? Visibility.Visible : Visibility.Collapsed;
             if (startTime != default(DateTime))
             {
-                for (DateTime itemTime = startTime.Date; itemTime < endTime; itemTime = itemTime.AddDays(1))
+                //番組データの終端が8日後の早朝にかかることがあるが、番組表の日付は1週間後(今日+7日)までにする
+                DateTime lastDay = DateTime.UtcNow.AddHours(9).Date.AddDays(7);
+                for (DateTime itemTime = startTime.Date; itemTime < endTime && itemTime <= lastDay; itemTime = itemTime.AddDays(1))
                 {
                     Button day = new Button();
                     day.Content = new Border()

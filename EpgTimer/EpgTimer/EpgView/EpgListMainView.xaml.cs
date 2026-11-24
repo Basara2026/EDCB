@@ -54,11 +54,49 @@ namespace EpgTimer
 
             setViewInfo = setInfo;
             baseTime = _baseTime;
+
+            //動作設定で指定したフォントとサイズ(空欄・0のときは全体の設定)
+            if (string.IsNullOrWhiteSpace(Settings.Instance.EpgListViewFontName))
+            {
+                ClearValue(TextElement.FontFamilyProperty);
+            }
+            else
+            {
+                SetValue(TextElement.FontFamilyProperty, CommonManager.CreateFontFamily(Settings.Instance.EpgListViewFontName));
+            }
+            if (Settings.Instance.EpgListViewFontSize >= 1 && Settings.Instance.EpgListViewFontSize <= 200)
+            {
+                SetValue(TextElement.FontSizeProperty, Settings.Instance.EpgListViewFontSize);
+            }
+            if (Settings.Instance.EpgListViewFontWeight >= 1 && Settings.Instance.EpgListViewFontWeight <= 999 && Settings.Instance.EpgListViewFontWeight != 400)
+            {
+                SetValue(TextElement.FontWeightProperty, FontWeight.FromOpenTypeWeight(Settings.Instance.EpgListViewFontWeight));
+            }
+            else
+            {
+                ClearValue(TextElement.FontWeightProperty);
+            }
+
+            //左側のサービス名の枠の幅と、上の番組内容の枠の高さを、前回の値に戻す。変えたときに記憶する
+            if (Settings.Instance.EpgListServiceWidth >= 20)
+            {
+                grid_list.ColumnDefinitions[0].Width = new GridLength(Settings.Instance.EpgListServiceWidth);
+            }
+            if (Settings.Instance.EpgListEventHeight >= 20)
+            {
+                grid_right.RowDefinitions[0].Height = new GridLength(Settings.Instance.EpgListEventHeight);
+            }
+            gridSplitter1.DragCompleted += (sender, e) =>
+            {
+                Settings.Instance.EpgListServiceWidth = grid_list.ColumnDefinitions[0].ActualWidth;
+            };
+            gridSplitter2.DragCompleted += (sender, e) =>
+            {
+                Settings.Instance.EpgListEventHeight = grid_right.RowDefinitions[0].ActualHeight;
+            };
             listView_event.AlternationCount = Settings.Instance.ResAlternationCount;
             if (Settings.ContextMenuResourceDictionary != null)
             {
-                button_prev.ContextMenu.Resources.MergedDictionaries.Add(Settings.ContextMenuResourceDictionary);
-                button_next.ContextMenu.Resources.MergedDictionaries.Add(Settings.ContextMenuResourceDictionary);
                 listView_event.ContextMenu.Resources.MergedDictionaries.Add(Settings.ContextMenuResourceDictionary);
             }
         }
@@ -79,8 +117,6 @@ namespace EpgTimer
             listView_event.ItemsSource = null;
             serviceEventList.Clear();
             richTextBox_eventInfo.Document.Blocks.Clear();
-            button_prev.IsEnabled = false;
-            button_next.IsEnabled = false;
         }
 
         public bool HasService(ushort onid, ushort tsid, ushort sid)
@@ -103,62 +139,19 @@ namespace EpgTimer
         }
 
         /// <summary>
-        /// 表示週変更
+        /// サービス名の枠の幅を変えたとき、サービス名の列も枠の幅に合わせて広げる(広げても文字が切れたままにならないように)
         /// </summary>
-        void button_time_Click(object sender, RoutedEventArgs e)
+        private void listBox_service_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            DateTime lastTime = baseTime;
-            baseTime = ActualBaseTime().AddDays(sender == button_prev ? -7 : 7);
-            baseTime = baseTime < CommonManager.Instance.DB.EventBaseTime ? baseTime : DateTime.MaxValue;
-            if (ReloadEpgData())
+            if (gridView_service.Columns.Count < 2)
             {
-                updateEpgData = false;
+                return;
             }
-            else
+            //チェックボックスの列と、縦スクロールバー、余白の分を引く
+            double width = listBox_service.ActualWidth - gridView_service.Columns[0].ActualWidth - SystemParameters.VerticalScrollBarWidth - 8;
+            if (width > 20)
             {
-                baseTime = lastTime;
-            }
-        }
-
-        /// <summary>
-        /// 表示週変更
-        /// </summary>
-        void button_time_ContextMenuOpening(object sender, ContextMenuEventArgs e)
-        {
-            ContextMenu menu = ((Button)sender).ContextMenu;
-            menu.Items.Clear();
-            bool prev = sender == button_prev;
-            for (int i = 1; i <= 15; i++)
-            {
-                var menuItem = new MenuItem();
-                int days = i * (prev ? -7 : 7);
-                menuItem.Click += (sender2, e2) =>
-                {
-                    DateTime lastTime = baseTime;
-                    baseTime = ActualBaseTime().AddDays(days);
-                    baseTime = baseTime < CommonManager.Instance.DB.EventBaseTime ? baseTime : DateTime.MaxValue;
-                    if (ReloadEpgData())
-                    {
-                        updateEpgData = false;
-                    }
-                    else
-                    {
-                        baseTime = lastTime;
-                    }
-                };
-                menuItem.FontWeight = i == 1 ? FontWeights.Bold : FontWeights.Normal;
-                menuItem.Header = ActualBaseTime().AddDays(days).ToString("yyyy\\/MM\\/dd～");
-                if (prev ? ActualBaseTime().AddDays(days) <= CommonManager.Instance.DB.EventMinTime :
-                           ActualBaseTime().AddDays(days) >= CommonManager.Instance.DB.EventBaseTime)
-                {
-                    menu.Items.Insert(prev ? menu.Items.Count : 0, menuItem);
-                    break;
-                }
-                if (i == 15)
-                {
-                    menuItem.Header += prev ? " ↓" : " ↑";
-                }
-                menu.Items.Insert(prev ? menu.Items.Count : 0, menuItem);
+                gridView_service.Columns[1].Width = width;
             }
         }
 
@@ -316,8 +309,6 @@ namespace EpgTimer
                     i = skip;
                 }
                 listBox_service.ItemsSource = serviceList;
-                button_prev.IsEnabled = enablePrev;
-                button_next.IsEnabled = enableNext;
 
                 UpdateEventList();
             }
@@ -416,7 +407,7 @@ namespace EpgTimer
                                 }
 
                                 var item = new SearchItem(eventInfo, past, filtered, false);
-                                item.ServiceName = info.ServiceInfo.service_name;
+                                item.ServiceName = info.EpgServiceName;
                                 programList.Add(item);
                             }
                         }
@@ -548,6 +539,7 @@ namespace EpgTimer
         private void listView_event_ContextMenuOpening(object sender, ContextMenuEventArgs e)
         {
             var item = listView_event.SelectedItem as SearchItem;
+            cm_copy.IsEnabled = item != null;
             if (item != null)
             {
                 cm_new.IsEnabled = item.IsReserved == false && item.Past == false;
@@ -829,6 +821,15 @@ namespace EpgTimer
                 {
                     MessageBox.Show(message);
                 }
+            }
+        }
+
+        private void cm_copy_Click(object sender, RoutedEventArgs e)
+        {
+            var item = listView_event.SelectedItem as SearchItem;
+            if (item != null)
+            {
+                CommonManager.CopyProgramText(item.EventInfo);
             }
         }
 
