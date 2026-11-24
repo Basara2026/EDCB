@@ -15,6 +15,10 @@ EpgTimer に変更を加えたフォークです。
   （Document/EDCB_ALL.VS2026.core.sln の追加）のみです
 - ビルドにはこのソリューションファイルを使用してください
 
+| <img src="docs/images/epg-color-mode.jpg" alt="カラーモードの番組表" width="400"> | <img src="docs/images/epg-dark-mode.jpg" alt="ダークモードの番組表" width="400"> |
+|:---:|:---:|
+| カラーモード | ダークモード |
+
 ----
 以下はフォーク元（xtne6f氏）の説明です。
 
